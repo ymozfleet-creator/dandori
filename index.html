@@ -563,7 +563,7 @@ footer .logo{color:var(--paper)}
    STRIPE_LINK  : StripeのURLを設定すると決済ボタンが有効になります。
    PROJECTS_URL : GoogleスプレッドシートのCSV URL。
    LINE_URL     : LINE公式アカウントのURL。 */
-const CONFIG={NOTIFY_EMAIL:"y.moz.fleet@gmail.com",STRIPE_LINK:"",PROJECTS_URL:"projects.csv",LINE_URL:""};
+const CONFIG={NOTIFY_EMAIL:"y.moz.fleet@gmail.com",STRIPE_LINK:"https://buy.stripe.com/9B64gBalc9jbd9mfzt33W04",PROJECTS_URL:"projects.csv",LINE_URL:""};
 
 function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 function relTime(d){return d<=0?"本日":(d>=30?"30日以上前":d+"日前");}
