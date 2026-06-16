@@ -1,8 +1,17 @@
 <!DOCTYPE html>
+<!--
+  ダンドリ LP（PMO代行マッチング）/ ARK株式会社
+  ▼ 編集ポイントは2箇所だけ：
+    1) 機能設定 … スクリプト冒頭の const CONFIG（メール/Stripe/案件CSV/LINEのURL）
+    2) 法務文面 … スクリプト内の const LEGAL（terms/privacy/tokusho）
+  ▼ 案件の追加 … リポジトリの projects.csv に1行追加（社名・氏名・連絡先は書かない）
+  ※ 法務文面は専門家レビュー完了まで「ドラフト」注記を外さないこと
+-->
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 44 50'%3E%3Crect x='2' y='8' width='24' height='7' rx='2' fill='%230D1117'/%3E%3Crect x='9' y='21' width='28' height='7' rx='2' fill='%230D1117'/%3E%3Crect x='16' y='34' width='20' height='7' rx='2' fill='%23FF4D12'/%3E%3C/svg%3E">
 <title>ダンドリ｜「進まない」を、終わらせる。PMO代行マッチング</title>
 <meta name="description" content="やると決めたのに、進まない。足りないのは人手じゃない、段取りだ。審査済みのPMO（段取りのプロ）から提案が届くマッチング「ダンドリ」。発注は何度でも0円、1時間のスポット相談から。">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -10,15 +19,15 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Shippori+Mincho+B1:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
-  --ink:#0D1117;
+  --ink:#0D1117;        /* 黒 */
   --ink2:#151B23;
-  --paper:#F6F4EF;
+  --paper:#F6F4EF;      /* 生成り */
   --white:#FFFFFF;
-  --accent:#FF4D12;
+  --accent:#FF4D12;     /* 朱 */
   --accent-deep:#D63B07;
   --amber:#F2B25C;
   --muted:#707A86;
-  --muted-d:#9AA4B0;
+  --muted-d:#9AA4B0;    /* on dark */
   --line:#E2DFD7;
   --line-d:rgba(255,255,255,.14);
   --sans:"Noto Sans JP",sans-serif;
@@ -33,6 +42,15 @@ button{font-family:inherit}
 img,svg{display:block}
 .wrap{max-width:1080px;margin:0 auto;padding:0 24px}
 ::selection{background:var(--accent);color:#fff}
+
+/* ===== 横はみ出し防止（全デバイス保険） ===== */
+html,body{overflow-x:hidden;max-width:100%}
+img,svg,table,iframe,pre{max-width:100%}
+*{min-width:0}
+.modal,.form-box,.line-banner,.faq,.assure{max-width:min(100%,760px)}
+
+
+/* ===== type ===== */
 .kicker{font-family:var(--mono);font-size:12px;letter-spacing:.32em;color:var(--accent);font-weight:600;margin-bottom:22px;display:flex;align-items:center;gap:14px}
 .kicker::before{content:"";width:36px;height:2px;background:var(--accent)}
 .dark .kicker{color:var(--accent)}
@@ -41,6 +59,8 @@ h2.head{font-family:var(--serif);font-weight:800;font-size:clamp(30px,5.2vw,52px
 .dark .lead{color:var(--muted-d)}
 section{padding:110px 0}
 .dark{background:var(--ink);color:var(--paper)}
+
+/* ===== buttons ===== */
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;padding:18px 38px;font-weight:900;font-size:15px;border:none;cursor:pointer;transition:transform .15s,background .15s;letter-spacing:.04em}
 .btn:hover{transform:translateY(-2px)}
 .btn-fill{background:var(--accent);color:#fff}
@@ -48,14 +68,18 @@ section{padding:110px 0}
 .btn-ghost{background:transparent;border:2px solid currentColor}
 .btn-line{background:#06C755;color:#fff}
 .btn .ar{font-family:var(--mono)}
+
+/* ===== header ===== */
 header{position:sticky;top:0;z-index:100;background:rgba(13,17,23,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line-d)}
 .nav{display:flex;align-items:center;justify-content:space-between;height:66px;color:var(--paper)}
 .logo{font-weight:900;font-size:20px;letter-spacing:.14em;display:flex;align-items:center;gap:10px}
-.logo i{width:14px;height:14px;background:var(--accent);display:inline-block}
+.logo-mark{width:20px;height:23px;flex:none}
 .logo small{font-size:10px;font-weight:500;color:var(--muted-d);letter-spacing:.08em}
 .nav-links{display:flex;gap:26px;font-size:13px;font-weight:700;align-items:center}
 .nav-links a:hover{color:var(--accent)}
 .nav .btn{padding:11px 22px;font-size:13px}
+
+/* ===== hero ===== */
 .hero{background:var(--ink);color:var(--paper);padding:96px 0 0;position:relative;overflow:hidden}
 .hero::after{content:"段取";position:absolute;right:-4%;bottom:-9%;font-family:var(--serif);font-weight:800;font-size:clamp(220px,36vw,460px);line-height:1;color:rgba(255,255,255,.035);pointer-events:none;letter-spacing:-.04em}
 .hero .tag{display:inline-block;border:1.5px solid var(--accent);color:var(--accent);font-family:var(--mono);font-size:11.5px;letter-spacing:.26em;padding:7px 18px;margin-bottom:34px}
@@ -68,6 +92,8 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,17,23,.92);backdrop-
 .hero-cta{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
 .hero .note{font-size:11.5px;color:var(--muted-d);margin-top:22px;font-family:var(--mono);letter-spacing:.06em}
 .hero-inner{position:relative;z-index:2;padding-bottom:96px}
+
+/* ===== numbers band ===== */
 .band{background:var(--accent);color:#fff;padding:0}
 .band .wrap{display:grid;grid-template-columns:repeat(3,1fr)}
 .band .b{padding:34px 20px;text-align:center;border-right:1px solid rgba(255,255,255,.25)}
@@ -75,12 +101,16 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,17,23,.92);backdrop-
 .band b{font-family:var(--mono);font-size:clamp(30px,4.4vw,44px);font-weight:600;display:block;line-height:1.2}
 .band b small{font-size:15px;font-weight:600}
 .band span{font-size:12px;font-weight:700;letter-spacing:.1em}
+
+/* ===== pain ===== */
 .pain-item{border-top:1px solid var(--line);padding:44px 0;display:grid;grid-template-columns:1.2fr 1fr;gap:36px;align-items:center}
 .pain-item:last-child{border-bottom:1px solid var(--line)}
 .pain-item .q{font-family:var(--serif);font-weight:700;font-size:clamp(21px,3.4vw,31px);line-height:1.7}
 .pain-item .q .n{font-family:var(--mono);font-size:13px;color:var(--accent);display:block;margin-bottom:8px;font-weight:600;letter-spacing:.2em}
 .pain-item .a{font-size:14px;color:var(--muted);border-left:3px solid var(--accent);padding-left:18px}
 .pain-item .a b{color:var(--ink);font-size:15px;display:block;margin-bottom:4px}
+
+/* ===== case ===== */
 .case-sec{position:relative;overflow:hidden}
 .case-sec::before{content:"CASE";position:absolute;left:-1%;top:-2%;font-family:var(--mono);font-weight:600;font-size:clamp(120px,20vw,240px);color:rgba(255,255,255,.04);line-height:1;letter-spacing:-.02em}
 .case-num{display:flex;align-items:baseline;gap:clamp(12px,3vw,28px);font-family:var(--mono);font-weight:600;margin:34px 0 14px;flex-wrap:wrap}
@@ -94,6 +124,8 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,17,23,.92);backdrop-
 .case-tags{display:flex;gap:8px;flex-wrap:wrap;margin-top:22px}
 .case-tags span{font-size:11.5px;border:1px solid var(--line-d);padding:4px 14px;color:var(--muted-d)}
 .case-note{font-size:10.5px;color:var(--muted-d);margin-top:26px}
+
+/* ===== steps ===== */
 .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1px solid var(--line);background:var(--white)}
 .step{padding:44px 34px;border-right:1px solid var(--line);position:relative}
 .step:last-child{border-right:none}
@@ -102,6 +134,8 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,17,23,.92);backdrop-
 .step p{font-size:13px;color:var(--muted)}
 .assure{margin-top:26px;display:flex;gap:12px;align-items:flex-start;font-size:13px;background:var(--white);border:1px solid var(--line);border-left:4px solid var(--accent);padding:18px 22px}
 .assure b{color:var(--accent)}
+
+/* ===== plans ===== */
 .plans{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
 .plan{background:var(--white);border:1px solid var(--line);padding:38px 30px;position:relative;display:flex;flex-direction:column}
 .plan.hot{border:2px solid var(--accent)}
@@ -115,6 +149,8 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,17,23,.92);backdrop-
 .plan li::before{content:"—";position:absolute;left:0;color:var(--accent);font-weight:900}
 .free-line{text-align:center;margin-top:34px;font-family:var(--serif);font-size:clamp(18px,2.6vw,24px);font-weight:700}
 .free-line b{color:var(--accent)}
+
+/* ===== projects ===== */
 .proj-list{border-top:2px solid var(--ink)}
 .proj-row{display:grid;grid-template-columns:1fr auto;gap:18px;align-items:center;padding:24px 6px;border-bottom:1px solid var(--line);transition:background .15s}
 .proj-row:hover{background:var(--white)}
@@ -132,6 +168,8 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,17,23,.92);backdrop-
 .alertbox input,.alertbox select{padding:13px;border:1px solid var(--line);font-family:inherit;font-size:13px;background:var(--paper)}
 .alertbox input{flex:1 1 190px}
 .alertbox .btn{padding:13px 22px;font-size:13px}
+
+/* ===== categories ===== */
 .catlist{border-top:2px solid var(--ink)}
 .catbox{border-bottom:1px solid var(--line)}
 .cb-head{width:100%;background:none;border:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;padding:22px 6px;text-align:left}
@@ -142,6 +180,8 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,17,23,.92);backdrop-
 .catbox.open ul{display:grid}
 .catbox li button{width:100%;text-align:left;background:var(--white);border:1px solid var(--line);padding:11px 14px;font-size:12.5px;cursor:pointer;transition:border-color .15s,color .15s;font-family:inherit}
 .catbox li button:hover{border-color:var(--accent);color:var(--accent-deep)}
+
+/* ===== pmo band ===== */
 .pmo-band{position:relative;overflow:hidden}
 .pmo-band::after{content:"PMO";position:absolute;right:-2%;top:6%;font-family:var(--mono);font-weight:600;font-size:clamp(120px,22vw,260px);color:rgba(255,255,255,.04);line-height:1}
 .pmo-grid{display:grid;grid-template-columns:1.2fr 1fr;gap:50px;align-items:center;position:relative;z-index:2}
@@ -151,6 +191,8 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,17,23,.92);backdrop-
 .pmo-price .row b{font-family:var(--mono);font-size:19px;color:var(--amber)}
 .spot-menu{display:flex;gap:8px;flex-wrap:wrap;margin:26px 0 34px}
 .spot-menu span{font-size:12px;border:1px solid var(--line-d);padding:6px 16px;color:var(--muted-d)}
+
+/* ===== form ===== */
 .line-banner{max-width:760px;margin:0 auto 18px;background:var(--white);border:1px solid var(--line);border-left:4px solid #06C755;padding:18px 22px;display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap}
 .line-banner p{font-size:13px}
 .line-banner b{color:#059347}
@@ -173,12 +215,16 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,17,23,.92);backdrop-
 .form-done{display:none;text-align:center;padding:36px 0}
 .form-done.show{display:block}
 .form-done .ok{width:54px;height:54px;border:2px solid var(--accent);color:var(--accent);font-size:24px;font-weight:900;display:flex;align-items:center;justify-content:center;margin:0 auto 18px;border-radius:50%}
+
+/* ===== faq ===== */
 .faq{max-width:760px;margin:40px auto 0}
 .faq details{border-bottom:1px solid var(--line)}
 .faq summary{padding:20px 4px;font-weight:700;font-size:14.5px;cursor:pointer;list-style:none;display:flex;gap:14px;align-items:baseline}
 .faq summary::before{content:"Q";font-family:var(--mono);color:var(--accent);font-weight:600}
 .faq summary::-webkit-details-marker{display:none}
 .faq .a{padding:0 4px 20px 32px;font-size:13.5px;color:var(--muted)}
+
+/* ===== footer ===== */
 footer{background:var(--ink);color:var(--muted-d);padding:60px 0 30px;font-size:13px}
 .foot-grid{display:flex;justify-content:space-between;gap:30px;flex-wrap:wrap;margin-bottom:38px}
 footer .logo{color:var(--paper)}
@@ -186,6 +232,8 @@ footer .logo{color:var(--paper)}
 .foot-links a{cursor:pointer}
 .foot-links a:hover{color:#fff}
 .copy{border-top:1px solid var(--line-d);padding-top:22px;font-family:var(--mono);font-size:10.5px;display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
+
+/* ===== legal modal ===== */
 .modal-bg{display:none;position:fixed;inset:0;background:rgba(13,17,23,.7);z-index:200;padding:20px;overflow-y:auto}
 .modal-bg.open{display:flex;align-items:flex-start;justify-content:center}
 .modal{background:#fff;max-width:680px;width:100%;margin:30px auto;padding:34px 30px;position:relative}
@@ -195,11 +243,17 @@ footer .logo{color:var(--paper)}
 .modal p,.modal li{font-size:12.5px;color:var(--muted);line-height:1.9}
 .modal ul{padding-left:18px}
 .m-close{position:absolute;top:14px;right:14px;width:36px;height:36px;border:1px solid var(--line);background:#fff;font-size:15px;cursor:pointer;color:var(--muted)}
+
+/* ===== sticky cta ===== */
 .sticky-cta{display:none;position:fixed;bottom:0;left:0;right:0;z-index:90;background:var(--ink);padding:10px 14px;gap:10px}
 .sticky-cta .btn{flex:1;padding:15px 8px;font-size:13.5px}
+
+/* ===== reveal ===== */
 .rv{opacity:0;transform:translateY(22px);transition:opacity .7s ease,transform .7s ease}
 .rv.in{opacity:1;transform:none}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}.rv{opacity:1;transform:none}}
+
+/* ===== mobile ===== */
 @media(max-width:880px){
   .hero::after,.case-sec::before,.pmo-band::after{display:none}
   .logo small{display:none}
@@ -232,15 +286,27 @@ footer .logo{color:var(--paper)}
   body{padding-bottom:70px}
 }
 
+@media(max-width:400px){
+  .wrap{padding:0 16px}
+  .hero h1{font-size:34px;line-height:1.4}
+  .hero .answer{font-size:18px}
+  h2.head{font-size:26px;line-height:1.5}
+  .case-num{gap:8px}
+  .case-num .to{font-size:64px}
+  .case-num .from{font-size:24px}
+  .case-num .unit{font-size:16px}
+  .band b{font-size:26px}
+  .btn{padding:16px 22px;font-size:14px}
+  .form-box{padding:22px 14px}
+}
 </style>
 </head>
-
 <body>
 
 <!-- ================= HEADER ================= -->
 <header>
   <div class="wrap nav">
-    <a class="logo" href="#"><i></i>ダンドリ<small>PMO代行マッチング</small></a>
+    <a class="logo" href="#"><svg class="logo-mark" viewBox="0 0 44 50" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="2" y="8" width="24" height="7" rx="2" fill="currentColor"/><rect x="9" y="21" width="28" height="7" rx="2" fill="currentColor"/><rect x="16" y="34" width="20" height="7" rx="2" fill="#FF4D12"/></svg>ダンドリ<small>PMO代行マッチング</small></a>
     <nav class="nav-links">
       <a href="#projects">相談案件</a>
       <a href="#category">頼める業務</a>
@@ -257,7 +323,7 @@ footer .logo{color:var(--paper)}
     <span class="tag">PMO MATCHING — DANDORI</span>
     <h1>社長、<br>ぜんぶ自分で<br><em>やってませんか。</em></h1>
     <p class="answer">やると決めたのに、進まない。<br>足りないのは人手じゃない。<b>段取り</b>だ。</p>
-    <p class="body">「ダンドリ」は、審査を通過した"段取りのプロ"＝PMOから提案が届くマッチングサービス。常駐支援から、1時間のスポット相談まで。発注は、何度でも0円です。</p>
+    <p class="body">「ダンドリ」は、審査を通過した“段取りのプロ”＝PMOから提案が届くマッチングサービス。常駐支援から、1時間のスポット相談まで。発注は、何度でも0円です。</p>
     <div class="hero-cta">
       <a class="btn btn-fill" href="#consult">無料で相談する<span class="ar">→</span></a>
       <button class="btn btn-line" onclick="openLine()" type="button">LINEで相談</button>
@@ -472,7 +538,6 @@ footer .logo{color:var(--paper)}
           </form>
           <div class="form-done" id="client-done"><div class="ok">✓</div><h3 style="font-family:var(--serif);font-weight:800;margin-bottom:6px">相談を受け付けました</h3><p style="font-size:13px;color:var(--muted)">条件にマッチしたPMOからの提案を、平均1〜2営業日でお届けします。</p></div>
         </div>
-
         <!-- PMO -->
         <div class="fpanel" id="fp-pmo">
           <form id="pmo-form"><input type="hidden" name="_subject" value="【ダンドリ】PMO掲載申込">
@@ -530,7 +595,7 @@ footer .logo{color:var(--paper)}
   <div class="wrap">
     <div class="foot-grid">
       <div>
-        <a class="logo" href="#"><i></i>ダンドリ</a>
+        <a class="logo" href="#"><svg class="logo-mark" viewBox="0 0 44 50" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="2" y="8" width="24" height="7" rx="2" fill="currentColor"/><rect x="9" y="21" width="28" height="7" rx="2" fill="currentColor"/><rect x="16" y="34" width="20" height="7" rx="2" fill="#FF4D12"/></svg>ダンドリ</a>
         <p style="margin-top:12px;font-size:12px">PMO代行マッチング「ダンドリ」<br>運営：ARK株式会社<br><span style="font-size:11px">本サービスは業務委託のマッチングであり、雇用の紹介・あっせんは行いません。</span></p>
       </div>
       <div class="foot-links">
@@ -558,16 +623,20 @@ footer .logo{color:var(--paper)}
 </div>
 
 <script>
-/* ====== 運用設定 ======
-   NOTIFY_EMAIL : 通知を受け取るメールアドレス。
-   STRIPE_LINK  : StripeのURLを設定すると決済ボタンが有効になります。
-   PROJECTS_URL : GoogleスプレッドシートのCSV URL。
-   LINE_URL     : LINE公式アカウントのURL。 */
-const CONFIG={NOTIFY_EMAIL:"y.moz.fleet@gmail.com",STRIPE_LINK:"https://buy.stripe.com/9B64gBalc9jbd9mfzt33W04",PROJECTS_URL:"projects.csv",LINE_URL:"https://lin.ee/zKAdLzsf"};
+/* ====== 運用設定（開業時にここだけ設定すれば実機能が有効になります）======
+   NOTIFY_EMAIL : 通知を受け取るメールアドレス。設定するとフォームがFormSubmit経由で実送信されます。
+   STRIPE_LINK  : Stripeダッシュボードで作成した「支払いリンク」URL。設定すると決済ボタンが有効になります。
+   PROJECTS_URL : Googleスプレッドシート「ウェブに公開（CSV）」のURL。設定すると実案件がリアルタイム表示されます。
+                  1行目は見出し：タイトル,カテゴリ,予算,地域,稼働,内容,参加数,経過日数,注目
+                  【重要】公開CSVは誰でも閲覧できます。社名・氏名・連絡先など個人情報は絶対に書かないでください。
+   LINE_URL     : LINE公式アカウントの友だち追加URL（https://lin.ee/xxxx）。 */
+const CONFIG={NOTIFY_EMAIL:"",STRIPE_LINK:"",PROJECTS_URL:"",LINE_URL:""};
 
+/* ---------- utils ---------- */
 function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 function relTime(d){return d<=0?"本日":(d>=30?"30日以上前":d+"日前");}
 
+/* ---------- mail / pay / line ---------- */
 async function sendForm(form,doneId){
   if(CONFIG.NOTIFY_EMAIL){
     try{await fetch("https://formsubmit.co/ajax/"+encodeURIComponent(CONFIG.NOTIFY_EMAIL),{method:"POST",headers:{Accept:"application/json"},body:new FormData(form)});}
@@ -575,17 +644,14 @@ async function sendForm(form,doneId){
   }
   form.style.display="none";document.getElementById(doneId).classList.add("show");
 }
-
 function openPay(){
   if(CONFIG.STRIPE_LINK){window.open(CONFIG.STRIPE_LINK,"_blank");}
   else{alert("お支払いはクレジットカード（Stripe）です。審査通過後、事務局から決済リンクをご案内します。");}
 }
-
 function openLine(){
   if(CONFIG.LINE_URL){window.open(CONFIG.LINE_URL,"_blank");}
   else{alert("LINE公式アカウントは準備中です。まずはフォームからご相談ください。");}
 }
-
 function regAlert(){
   const em=document.getElementById("al-email").value.trim(),c=document.getElementById("al-cat").value;
   if(!em||!em.includes("@")){alert("メールアドレスを入力してください");return;}
@@ -596,6 +662,7 @@ function regAlert(){
   document.querySelector(".alertbox").innerHTML='<div class="t">登録しました。'+esc(c)+'の新着案件をお知らせします。<small>配信はいつでも停止できます。</small></div>';
 }
 
+/* ---------- projects (Googleシート連携・サンプル自動切替) ---------- */
 const SAMPLE_PROJECTS=[
  {title:"【基幹システム刷新】進捗管理の見積もり依頼",cat:"製造・生産PMO",budget:"月40万円まで",area:"愛知県",style:"週2日希望",joined:5,days:0,hot:true},
  {title:"【新規事業立ち上げ】経営会議の事務局とPMO伴走",cat:"経営・新規事業PMO",budget:"月50万円まで",area:"東京都",style:"週1日＋リモート",joined:6,days:1,hot:true},
@@ -614,15 +681,13 @@ function renderProjects(list,isSample){
    <div class="proj-row">
      <div>
        <h4>${p.hot?'<span class="hot">人気</span>':''}${esc(p.title)}</h4>
-       <div class="pj-meta"><span class="bd">予算 ${esc(p.budget)}</span><span>${esc(p.area)}</span>${p.style?'<span>'+esc(p.style)+'</span>':""}<span>${esc(p.cat)}</span></div>
+       <div class="pj-meta"><span class="bd">予算 ${esc(p.budget)}</span><span>${esc(p.area)}</span>${p.style?`<span>${esc(p.style)}</span>`:""}<span>${esc(p.cat)}</span></div>
      </div>
      <div class="pj-side"><b>参加 ${p.joined}名</b>${relTime(p.days)}</div>
    </div>`).join("");
   document.getElementById("proj-more-wrap").style.display=(list.length>4&&!window._allProj)?"block":"none";
 }
-
 function showAllProjects(){window._allProj=true;renderProjects(window._projList,window._projSample);}
-
 function parseCSV(t){
   return t.trim().split(/\r?\n/).map(r=>{
     const out=[];let cur="",q=false;
@@ -630,7 +695,6 @@ function parseCSV(t){
     out.push(cur);return out;
   });
 }
-
 async function loadProjects(){
   if(CONFIG.PROJECTS_URL){
     try{
@@ -647,8 +711,8 @@ async function loadProjects(){
 }
 loadProjects();
 
+/* ---------- categories ---------- */
 const CATMAP={"経営・新規事業":"経営・新規事業PMO","IT・システム開発":"IT・システム開発PMO","DX・業務改善":"DX・業務改善PMO","製造・生産":"製造・生産PMO","建設・店舗":"建設・店舗PMO","マーケ・営業":"マーケ・営業PMO","バックオフィス":"バックオフィスPMO","スポット相談":"スポット相談（ピンポイントPMO）","医療・介護・ヘルスケア":"医療・介護・ヘルスケアPMO","物流・サプライチェーン":"物流・サプライチェーンPMO","人事・組織":"人事・組織PMO","補助金・公共":"補助金・公共PMO","飲食・小売・サービス":"飲食・小売・サービスPMO","環境・エネルギー":"環境・エネルギーPMO"};
-
 const CATLIST=[
  {name:"経営・新規事業PMO",key:"経営・新規事業",links:["新規事業立ち上げの伴走","経営会議・幹部会議の事務局","事業計画の実行管理","中期経営計画の実行管理","補助金採択後のPJ管理","M&A・PMI統合管理","事業承継プロジェクト","フランチャイズ展開の管理","海外展開プロジェクト","資金調達PJの管理","アライアンス・合弁の管理","撤退・事業整理の管理"]},
  {name:"IT・システム開発PMO",key:"IT・システム開発",links:["進捗・スケジュール管理","課題・リスク管理","ベンダー管理","品質管理・テスト計画","要件定義の伴走支援","PMO事務局の立ち上げ","基幹システム刷新","クラウド移行（AWS/Azure）","セキュリティ対策PJ（ISMS）","データ移行の管理","保守運用体制の構築","アジャイル・スクラム導入","PM管理ツール導入","炎上PJの立て直し","開発内製化の支援"]},
@@ -670,9 +734,7 @@ document.getElementById("catlist").innerHTML=CATLIST.map((c,i)=>`
    <button class="cb-head" onclick="this.parentElement.classList.toggle('open')"><h3>${c.name}</h3><span class="chev">＋</span></button>
    <ul>${c.links.map(l=>`<li><button onclick="pickTask('${c.key}','${l}')">${l}</button></li>`).join("")}</ul>
  </div>`).join("");
-
 function presetCat(name){const v=CATMAP[name]||"";if(v)document.getElementById("c-cat").value=v;openClientTab();}
-
 function pickTask(cat,task){
   presetCat(cat);
   const f=document.getElementById("c-task");
@@ -680,6 +742,7 @@ function pickTask(cat,task){
   location.hash="#consult";
 }
 
+/* ---------- form tabs ---------- */
 const ftabs=document.querySelectorAll(".form-tab");
 function showTab(key){
   ftabs.forEach(t=>t.classList.toggle("on",t.dataset.f===key));
@@ -689,12 +752,12 @@ function showTab(key){
 ftabs.forEach(t=>t.addEventListener("click",()=>showTab(t.dataset.f)));
 function openClientTab(){showTab("client")}
 function openPmoTab(){showTab("pmo")}
-
 document.getElementById("client-form").addEventListener("submit",e=>{e.preventDefault();sendForm(e.target,"client-done");});
 document.getElementById("pmo-form").addEventListener("submit",e=>{e.preventDefault();sendForm(e.target,"pmo-done");});
 
+/* ---------- legal ---------- */
 const LEGAL={
-terms:`<h3>利用規約</h3><span class="m-draft">ドラフト版｜公開前に弁護士等の専門家による確認を行ってください</span>
+terms:`<h3>利用規約</h3><span class="m-draft">ドラフト版｜本格運用の前に弁護士・行政書士等の確認を受けてください（確認完了までこの注記は削除しないこと）</span>
 <h4>第1条（本サービスの性質）</h4><p>「ダンドリ」（以下「本サービス」）は、ARK株式会社（以下「当社」）が運営する、業務委託契約の締結機会を提供するマッチングサービスです。当社は職業安定法上の職業紹介（雇用契約のあっせん）および労働者派遣は一切行いません。発注会員は、本サービスを通じて知り合った受注会員を雇用契約に勧誘してはなりません。</p>
 <h4>第2条（会員登録・審査）</h4><p>受注会員（PMO）の掲載には当社所定の審査（実務経験・本人確認）があります。虚偽の申告が判明した場合、当社は登録を取り消すことができます。</p>
 <h4>第3条（契約の当事者）</h4><p>業務委託契約は発注会員と受注会員の間で直接締結され、当社は契約の当事者となりません。当社は契約書ひな形の提供等のサポートを行いますが、契約内容・履行・成果について保証しません。</p>
@@ -702,30 +765,29 @@ terms:`<h3>利用規約</h3><span class="m-draft">ドラフト版｜公開前に
 <h4>第5条（直接取引の禁止）</h4><p>会員は、本サービスを通じて知り合った相手方と、成約後6ヶ月間、本サービスを介さずに直接取引をしてはなりません。違反した場合、当社は当該取引額の20%相当額を違約金として請求できるものとします。</p>
 <h4>第6条（適正な業務委託・フリーランス新法の遵守）</h4><p>発注会員は、特定受託事業者に係る取引の適正化等に関する法律（フリーランス新法）に基づき、取引条件の明示、報酬の60日以内の支払い、ハラスメント対策等を遵守するものとします。また、受注会員に対して労働者に対するような直接の指揮命令を行ってはなりません（偽装請負の禁止）。</p>
 <h4>第7条（禁止事項）</h4><ul><li>虚偽の情報の登録・掲載</li><li>雇用契約への勧誘・引き抜き</li><li>本サービス外への誘導による手数料回避</li><li>法令・公序良俗に反する行為</li></ul>
-<h4>第8条（免責・規約の変更・準拠法）</h4><p>当社は、会員間の取引に起因する損害について、当社に故意または重過失がある場合を除き責任を負いません。当社は本規約を変更でき、変更後の規約は本サービス上での掲示により効力を生じます。本規約は日本法に準拠し、東京地方裁判所を第一審の専属的合意管轄裁判所とします。</p>`,
+<h4>第8条（免責・規約の変更・準拠法）</h4><p>当社は、会員間の取引に起因する損害について責任を負いません。ただし、当社の故意又は過失による場合はこの限りではなく、当社が消費者に対して負う損害賠償責任は、消費者契約法その他の強行法規に反しない範囲で制限されるものとします。当社は本規約を変更でき、変更後の規約は本サービス上での掲示により効力を生じます。本規約は日本法に準拠し、東京地方裁判所を第一審の専属的合意管轄裁判所とします。</p>`,
 privacy:`<h3>プライバシーポリシー</h3><span class="m-draft">ドラフト版｜公開前に専門家による確認を行ってください</span>
 <h4>1. 取得する情報</h4><p>会社名、氏名、メールアドレス、電話番号、経歴・実績情報、相談内容、本サービスの利用履歴。</p>
-<h4>2. 利用目的</h4><ul><li>マッチングの提供（相談内容を条件に合致する受注会員へ提示するためを含む）</li><li>本人確認・審査</li><li>料金の請求・決済</li><li>お知らせメールの配信（同意を得た方のみ・配信停止可能）</li><li>サービス改善のための統計分析（個人を識別できない形式）</li></ul>
+<h4>2. 利用目的</h4><ul><li>マッチングの提供（相談内容を条件に合致する受注会員へ提示するためを含む）</li><li>お問い合わせ内容の分類・要約・候補選定の補助（外部AIサービスを利用します。第4項参照）</li><li>本人確認・審査</li><li>料金の請求・決済</li><li>お知らせメールの配信（同意を得た方のみ・配信停止可能）</li><li>サービス改善のための統計分析（個人を識別できない形式）</li></ul>
 <h4>3. 連絡先情報の開示</h4><p>氏名・連絡先等の個人情報は、契約申請が成立するまで相手方会員に開示されません。契約申請の成立をもって、相手方への開示に同意いただいたものとします。</p>
-<h4>4. 第三者提供</h4><p>前項および法令に基づく場合を除き、本人の同意なく第三者に提供しません。決済処理はStripe社等の決済代行事業者に委託します。</p>
-<h4>5. 安全管理・開示請求</h4><p>当社は個人情報保護法に基づき適切な安全管理措置を講じます。保有個人データの開示・訂正・削除のご請求は、下記窓口までご連絡ください。<br>窓口：ARK株式会社 個人情報担当（メールアドレスは開業時に記載）</p>`,
+<h4>4. 外部サービスへの処理委託</h4><p>当社は、サービス提供のため以下の外部サービスに業務の一部を委託し、必要な範囲で情報を処理します。委託先には適切な管理を求めます。</p><ul><li>お問い合わせ内容の分類・要約・候補選定の補助：Anthropic社の生成AIサービス（Claude API）。送信前に社名・氏名・連絡先等の個人を特定する情報を除去・匿名化するよう努めます。</li><li>決済処理：Stripe社（クレジットカード情報は当社では保持しません）。</li><li>フォーム送信・メール配信、データ保管：Google社等のクラウドサービス。</li></ul><h4>5. 第三者提供</h4><p>前各項および法令に基づく場合を除き、本人の同意なく第三者に提供しません。</p>
+<h4>6. 安全管理・開示請求</h4><p>当社は個人情報保護法に基づき適切な安全管理措置を講じます。保有個人データの開示・訂正・削除のご請求は、下記窓口までご連絡ください。<br>窓口：ARK株式会社 個人情報担当（y.moz.fleet@gmail.com）</p>`,
 tokusho:`<h3>特定商取引法に基づく表記</h3><span class="m-draft">ドラフト版｜【 】内は開業時に正式情報を記載してください</span>
 <h4>販売事業者</h4><p>ARK株式会社</p>
 <h4>代表者</h4><p>茂住 雄太</p>
-<h4>所在地・電話番号</h4><p>【正式な所在地・電話番号を記載】（東京都中野区）<br>※電話番号はご請求があった場合に遅滞なく開示します。</p>
+<h4>所在地</h4><p>東京都中野区江原町2-13-13</p><h4>電話番号</h4><p>お問い合わせは本サイトのフォームまたはメールにて承ります（電話番号はご請求があった場合に遅滞なく開示します）。</p><h4>お問い合わせ窓口（メール）</h4><p>y.moz.fleet@gmail.com</p>
 <h4>販売価格</h4><p>掲載プラン：月額10,000円（税込11,000円）。発注企業の利用は無料です。</p>
 <h4>支払方法・時期</h4><p>クレジットカードによる月額自動決済（初回は審査通過後の掲載開始日に課金）。</p>
 <h4>役務の提供時期</h4><p>決済完了後、ただちに掲載を開始します。</p>
 <h4>契約期間・解約</h4><p>6ヶ月単位の自動更新です。解約はマイページまたはメールでいつでも申請でき、申請した契約期間の満了をもって終了します。期間途中の返金は行いません。先着20名のファウンディングメンバー枠は最低契約期間の定めなく解約できます。</p>
 <h4>動作環境</h4><p>最新版の主要ブラウザ（Chrome / Safari / Edge）。</p>`};
-
 function openLegal(k){document.getElementById("modal-body").innerHTML=LEGAL[k];document.getElementById("modal-bg").classList.add("open");document.body.style.overflow="hidden";}
 function closeLegal(){document.getElementById("modal-bg").classList.remove("open");document.body.style.overflow="";}
 document.addEventListener("keydown",e=>{if(e.key==="Escape")closeLegal();});
 
+/* ---------- reveal ---------- */
 const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add("in");io.unobserve(e.target);}}),{threshold:.1});
 document.querySelectorAll(".rv").forEach(el=>io.observe(el));
 </script>
-
 </body>
 </html>
