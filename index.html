@@ -1,793 +1,1495 @@
 <!DOCTYPE html>
+
 <!--
+
   ダンドリ LP（PMO代行マッチング）/ ARK株式会社
+
   ▼ 編集ポイントは2箇所だけ：
+
     1) 機能設定 … スクリプト冒頭の const CONFIG（メール/Stripe/案件CSV/LINEのURL）
+
     2) 法務文面 … スクリプト内の const LEGAL（terms/privacy/tokusho）
+
   ▼ 案件の追加 … リポジトリの projects.csv に1行追加（社名・氏名・連絡先は書かない）
+
   ※ 法務文面は専門家レビュー完了まで「ドラフト」注記を外さないこと
+
 -->
+
 <html lang="ja">
+
 <head>
+
 <meta charset="UTF-8">
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 44 50'%3E%3Crect x='2' y='8' width='24' height='7' rx='2' fill='%230D1117'/%3E%3Crect x='9' y='21' width='28' height='7' rx='2' fill='%230D1117'/%3E%3Crect x='16' y='34' width='20' height='7' rx='2' fill='%23FF4D12'/%3E%3C/svg%3E">
+
 <title>ダンドリ｜「進まない」を、終わらせる。PMO代行マッチング</title>
+
 <meta name="description" content="やると決めたのに、進まない。足りないのは人手じゃない、段取りだ。審査済みのPMO（段取りのプロ）から提案が届くマッチング「ダンドリ」。発注は何度でも0円、1時間のスポット相談から。">
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
+
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Shippori+Mincho+B1:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
 <style>
+
 :root{
+
   --ink:#0D1117;        /* 黒 */
+
   --ink2:#151B23;
+
   --paper:#F6F4EF;      /* 生成り */
+
   --white:#FFFFFF;
+
   --accent:#FF4D12;     /* 朱 */
+
   --accent-deep:#D63B07;
+
   --amber:#F2B25C;
+
   --muted:#707A86;
+
   --muted-d:#9AA4B0;    /* on dark */
+
   --line:#E2DFD7;
+
   --line-d:rgba(255,255,255,.14);
+
   --sans:"Noto Sans JP",sans-serif;
+
   --serif:"Shippori Mincho B1",serif;
+
   --mono:"IBM Plex Mono",monospace;
+
 }
+
 *{margin:0;padding:0;box-sizing:border-box}
+
 html{scroll-behavior:smooth}
+
 body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-height:1.9;font-size:15px;-webkit-font-smoothing:antialiased}
+
 a{color:inherit;text-decoration:none}
+
 button{font-family:inherit}
+
 img,svg{display:block}
+
 .wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+
 ::selection{background:var(--accent);color:#fff}
 
 /* ===== 横はみ出し防止（全デバイス保険） ===== */
+
 html,body{overflow-x:hidden;max-width:100%}
+
 img,svg,table,iframe,pre{max-width:100%}
+
 *{min-width:0}
+
 .modal,.form-box,.line-banner,.faq,.assure{max-width:min(100%,760px)}
 
-
 /* ===== type ===== */
+
 .kicker{font-family:var(--mono);font-size:12px;letter-spacing:.32em;color:var(--accent);font-weight:600;margin-bottom:22px;display:flex;align-items:center;gap:14px}
+
 .kicker::before{content:"";width:36px;height:2px;background:var(--accent)}
+
 .dark .kicker{color:var(--accent)}
+
 h2.head{font-family:var(--serif);font-weight:800;font-size:clamp(30px,5.2vw,52px);line-height:1.55;letter-spacing:.02em;margin-bottom:18px}
+
 .lead{font-size:15px;color:var(--muted);max-width:640px}
+
 .dark .lead{color:var(--muted-d)}
+
 section{padding:110px 0}
+
 .dark{background:var(--ink);color:var(--paper)}
 
 /* ===== buttons ===== */
+
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;padding:18px 38px;font-weight:900;font-size:15px;border:none;cursor:pointer;transition:transform .15s,background .15s;letter-spacing:.04em}
+
 .btn:hover{transform:translateY(-2px)}
+
 .btn-fill{background:var(--accent);color:#fff}
+
 .btn-fill:hover{background:var(--accent-deep)}
+
 .btn-ghost{background:transparent;border:2px solid currentColor}
+
 .btn-line{background:#06C755;color:#fff}
+
 .btn .ar{font-family:var(--mono)}
 
 /* ===== header ===== */
+
 header{position:sticky;top:0;z-index:100;background:rgba(13,17,23,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line-d)}
+
 .nav{display:flex;align-items:center;justify-content:space-between;height:66px;color:var(--paper)}
+
 .logo{font-weight:900;font-size:20px;letter-spacing:.14em;display:flex;align-items:center;gap:10px}
+
 .logo-mark{width:20px;height:23px;flex:none}
+
 .logo small{font-size:10px;font-weight:500;color:var(--muted-d);letter-spacing:.08em}
+
 .nav-links{display:flex;gap:26px;font-size:13px;font-weight:700;align-items:center}
+
 .nav-links a:hover{color:var(--accent)}
+
 .nav .btn{padding:11px 22px;font-size:13px}
 
 /* ===== hero ===== */
+
 .hero{background:var(--ink);color:var(--paper);padding:96px 0 0;position:relative;overflow:hidden}
+
 .hero::after{content:"段取";position:absolute;right:-4%;bottom:-9%;font-family:var(--serif);font-weight:800;font-size:clamp(220px,36vw,460px);line-height:1;color:rgba(255,255,255,.035);pointer-events:none;letter-spacing:-.04em}
+
 .hero .tag{display:inline-block;border:1.5px solid var(--accent);color:var(--accent);font-family:var(--mono);font-size:11.5px;letter-spacing:.26em;padding:7px 18px;margin-bottom:34px}
+
 .hero h1{font-family:var(--serif);font-weight:800;font-size:clamp(40px,8.6vw,84px);line-height:1.36;letter-spacing:.01em;overflow-wrap:anywhere}
+
 .hero h1 em{white-space:nowrap}
+
 .hero h1 em{font-style:normal;color:var(--accent)}
+
 .hero .answer{font-family:var(--serif);font-weight:700;font-size:clamp(19px,3vw,28px);margin:38px 0 20px;line-height:2}
+
 .hero .answer b{color:var(--accent);border-bottom:3px solid var(--accent);padding-bottom:2px}
+
 .hero p.body{color:var(--muted-d);max-width:560px;font-size:14.5px;margin-bottom:42px}
+
 .hero-cta{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
+
 .hero .note{font-size:11.5px;color:var(--muted-d);margin-top:22px;font-family:var(--mono);letter-spacing:.06em}
+
 .hero-inner{position:relative;z-index:2;padding-bottom:96px}
 
 /* ===== numbers band ===== */
+
 .band{background:var(--accent);color:#fff;padding:0}
+
 .band .wrap{display:grid;grid-template-columns:repeat(3,1fr)}
+
 .band .b{padding:34px 20px;text-align:center;border-right:1px solid rgba(255,255,255,.25)}
+
 .band .b:last-child{border-right:none}
+
 .band b{font-family:var(--mono);font-size:clamp(30px,4.4vw,44px);font-weight:600;display:block;line-height:1.2}
+
 .band b small{font-size:15px;font-weight:600}
+
 .band span{font-size:12px;font-weight:700;letter-spacing:.1em}
 
 /* ===== pain ===== */
+
 .pain-item{border-top:1px solid var(--line);padding:44px 0;display:grid;grid-template-columns:1.2fr 1fr;gap:36px;align-items:center}
+
 .pain-item:last-child{border-bottom:1px solid var(--line)}
+
 .pain-item .q{font-family:var(--serif);font-weight:700;font-size:clamp(21px,3.4vw,31px);line-height:1.7}
+
 .pain-item .q .n{font-family:var(--mono);font-size:13px;color:var(--accent);display:block;margin-bottom:8px;font-weight:600;letter-spacing:.2em}
+
 .pain-item .a{font-size:14px;color:var(--muted);border-left:3px solid var(--accent);padding-left:18px}
+
 .pain-item .a b{color:var(--ink);font-size:15px;display:block;margin-bottom:4px}
 
 /* ===== case ===== */
+
 .case-sec{position:relative;overflow:hidden}
+
 .case-sec::before{content:"CASE";position:absolute;left:-1%;top:-2%;font-family:var(--mono);font-weight:600;font-size:clamp(120px,20vw,240px);color:rgba(255,255,255,.04);line-height:1;letter-spacing:-.02em}
+
 .case-num{display:flex;align-items:baseline;gap:clamp(12px,3vw,28px);font-family:var(--mono);font-weight:600;margin:34px 0 14px;flex-wrap:wrap}
+
 .case-num .from{font-size:clamp(34px,6vw,58px);color:var(--muted-d);text-decoration:line-through;text-decoration-color:var(--accent);text-decoration-thickness:4px}
+
 .case-num .ar{font-size:clamp(26px,4vw,40px);color:var(--accent)}
+
 .case-num .to{font-size:clamp(72px,13vw,150px);line-height:1;color:var(--amber)}
+
 .case-num .unit{font-size:clamp(18px,3vw,28px);color:var(--amber)}
+
 .case-sub{font-family:var(--serif);font-size:clamp(17px,2.6vw,23px);font-weight:700;margin-bottom:26px}
+
 .case-body{display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:30px}
+
 .case-body p{font-size:14px;color:var(--muted-d)}
+
 .case-tags{display:flex;gap:8px;flex-wrap:wrap;margin-top:22px}
+
 .case-tags span{font-size:11.5px;border:1px solid var(--line-d);padding:4px 14px;color:var(--muted-d)}
+
 .case-note{font-size:10.5px;color:var(--muted-d);margin-top:26px}
 
 /* ===== steps ===== */
+
 .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1px solid var(--line);background:var(--white)}
+
 .step{padding:44px 34px;border-right:1px solid var(--line);position:relative}
+
 .step:last-child{border-right:none}
+
 .step .n{font-family:var(--mono);font-size:42px;font-weight:600;color:var(--accent);line-height:1;margin-bottom:18px}
+
 .step h3{font-family:var(--serif);font-size:20px;font-weight:700;margin-bottom:10px}
+
 .step p{font-size:13px;color:var(--muted)}
+
 .assure{margin-top:26px;display:flex;gap:12px;align-items:flex-start;font-size:13px;background:var(--white);border:1px solid var(--line);border-left:4px solid var(--accent);padding:18px 22px}
+
 .assure b{color:var(--accent)}
 
 /* ===== plans ===== */
+
 .plans{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+
 .plan{background:var(--white);border:1px solid var(--line);padding:38px 30px;position:relative;display:flex;flex-direction:column}
+
 .plan.hot{border:2px solid var(--accent)}
+
 .plan .p-tag{position:absolute;top:-12px;left:26px;background:var(--accent);color:#fff;font-size:11px;font-weight:900;padding:3px 14px;letter-spacing:.08em}
+
 .plan h3{font-family:var(--serif);font-size:22px;font-weight:800;margin-bottom:4px}
+
 .plan .p-for{font-size:12px;color:var(--muted);margin-bottom:18px}
+
 .plan .p-price{font-family:var(--mono);font-size:clamp(24px,3vw,30px);font-weight:600;line-height:1.3;border-top:1px solid var(--line);padding-top:18px}
+
 .plan .p-price small{font-size:12px;color:var(--muted);font-family:var(--sans);font-weight:500}
+
 .plan ul{list-style:none;margin-top:16px;flex:1}
+
 .plan li{font-size:13px;padding:7px 0 7px 20px;position:relative;color:var(--muted)}
+
 .plan li::before{content:"—";position:absolute;left:0;color:var(--accent);font-weight:900}
+
 .free-line{text-align:center;margin-top:34px;font-family:var(--serif);font-size:clamp(18px,2.6vw,24px);font-weight:700}
+
 .free-line b{color:var(--accent)}
 
 /* ===== projects ===== */
+
 .proj-list{border-top:2px solid var(--ink)}
+
 .proj-row{display:grid;grid-template-columns:1fr auto;gap:18px;align-items:center;padding:24px 6px;border-bottom:1px solid var(--line);transition:background .15s}
+
 .proj-row:hover{background:var(--white)}
+
 .proj-row h4{font-size:15.5px;font-weight:700;line-height:1.6;margin-bottom:6px}
+
 .proj-row h4 .hot{font-size:10px;background:var(--accent);color:#fff;padding:2px 9px;margin-right:8px;vertical-align:2px;font-weight:900}
+
 .pj-meta{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+
 .pj-meta .bd{color:var(--accent-deep);font-weight:700}
+
 .pj-side{text-align:right;font-family:var(--mono);font-size:12px;color:var(--muted);white-space:nowrap}
+
 .pj-side b{display:block;color:var(--ink);font-size:14px}
+
 .proj-note{font-size:12px;font-weight:700;margin-bottom:14px}
+
 .more-wrap{text-align:center;margin-top:26px}
+
 .alertbox{margin-top:34px;background:var(--white);border:1px solid var(--line);padding:22px 24px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+
 .alertbox .t{font-size:13.5px;font-weight:900;flex:1 1 230px}
+
 .alertbox .t small{display:block;font-weight:400;font-size:11.5px;color:var(--muted)}
+
 .alertbox input,.alertbox select{padding:13px;border:1px solid var(--line);font-family:inherit;font-size:13px;background:var(--paper)}
+
 .alertbox input{flex:1 1 190px}
+
 .alertbox .btn{padding:13px 22px;font-size:13px}
 
 /* ===== categories ===== */
+
 .catlist{border-top:2px solid var(--ink)}
+
 .catbox{border-bottom:1px solid var(--line)}
+
 .cb-head{width:100%;background:none;border:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;padding:22px 6px;text-align:left}
+
 .cb-head h3{font-family:var(--serif);font-size:18px;font-weight:700}
+
 .cb-head .chev{font-family:var(--mono);color:var(--accent);font-size:18px;transition:transform .2s}
+
 .catbox.open .chev{transform:rotate(45deg)}
+
 .catbox ul{display:none;list-style:none;padding:0 6px 24px;grid-template-columns:repeat(3,1fr);gap:8px}
+
 .catbox.open ul{display:grid}
+
 .catbox li button{width:100%;text-align:left;background:var(--white);border:1px solid var(--line);padding:11px 14px;font-size:12.5px;cursor:pointer;transition:border-color .15s,color .15s;font-family:inherit}
+
 .catbox li button:hover{border-color:var(--accent);color:var(--accent-deep)}
 
 /* ===== pmo band ===== */
+
 .pmo-band{position:relative;overflow:hidden}
+
 .pmo-band::after{content:"PMO";position:absolute;right:-2%;top:6%;font-family:var(--mono);font-weight:600;font-size:clamp(120px,22vw,260px);color:rgba(255,255,255,.04);line-height:1}
+
 .pmo-grid{display:grid;grid-template-columns:1.2fr 1fr;gap:50px;align-items:center;position:relative;z-index:2}
+
 .pmo-price{border:1px solid var(--line-d);padding:34px 30px}
+
 .pmo-price .row{display:flex;justify-content:space-between;align-items:baseline;padding:13px 0;border-bottom:1px solid var(--line-d);font-size:13.5px}
+
 .pmo-price .row:last-child{border-bottom:none}
+
 .pmo-price .row b{font-family:var(--mono);font-size:19px;color:var(--amber)}
+
 .spot-menu{display:flex;gap:8px;flex-wrap:wrap;margin:26px 0 34px}
+
 .spot-menu span{font-size:12px;border:1px solid var(--line-d);padding:6px 16px;color:var(--muted-d)}
 
 /* ===== form ===== */
+
 .line-banner{max-width:760px;margin:0 auto 18px;background:var(--white);border:1px solid var(--line);border-left:4px solid #06C755;padding:18px 22px;display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap}
+
 .line-banner p{font-size:13px}
+
 .line-banner b{color:#059347}
+
 .line-banner .btn{padding:13px 24px;font-size:13px}
+
 .form-tabs{display:flex;max-width:760px;margin:0 auto;border:1px solid var(--ink);border-bottom:none}
+
 .form-tab{flex:1;padding:18px 8px;text-align:center;font-weight:900;font-size:13.5px;cursor:pointer;background:var(--paper);color:var(--muted);border:none}
+
 .form-tab.on{background:var(--ink);color:#fff}
+
 .form-box{background:var(--white);border:1px solid var(--ink);padding:42px;max-width:760px;margin:0 auto}
+
 .fpanel{display:none}
+
 .fpanel.on{display:block}
+
 .fld{margin-bottom:18px}
+
 .fld label{display:block;font-size:12.5px;font-weight:700;margin-bottom:7px}
+
 .fld label i{font-style:normal;font-size:10px;color:#fff;background:var(--accent);padding:1px 8px;margin-left:8px;font-weight:700}
+
 .fld input,.fld select,.fld textarea{width:100%;padding:14px;border:1px solid var(--line);font-family:inherit;font-size:16px;background:var(--paper)}
+
 .fld textarea{min-height:96px;resize:vertical}
+
 .fld-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+
 .consent{display:flex;gap:10px;align-items:flex-start;font-size:12.5px;margin:14px 0;line-height:1.7}
+
 .consent input{margin-top:4px;width:17px;height:17px;flex:none}
+
 .consent a{color:var(--accent-deep);text-decoration:underline;cursor:pointer}
+
 .form-done{display:none;text-align:center;padding:36px 0}
+
 .form-done.show{display:block}
+
 .form-done .ok{width:54px;height:54px;border:2px solid var(--accent);color:var(--accent);font-size:24px;font-weight:900;display:flex;align-items:center;justify-content:center;margin:0 auto 18px;border-radius:50%}
 
 /* ===== faq ===== */
+
 .faq{max-width:760px;margin:40px auto 0}
+
 .faq details{border-bottom:1px solid var(--line)}
+
 .faq summary{padding:20px 4px;font-weight:700;font-size:14.5px;cursor:pointer;list-style:none;display:flex;gap:14px;align-items:baseline}
+
 .faq summary::before{content:"Q";font-family:var(--mono);color:var(--accent);font-weight:600}
+
 .faq summary::-webkit-details-marker{display:none}
+
 .faq .a{padding:0 4px 20px 32px;font-size:13.5px;color:var(--muted)}
 
 /* ===== footer ===== */
+
 footer{background:var(--ink);color:var(--muted-d);padding:60px 0 30px;font-size:13px}
+
 .foot-grid{display:flex;justify-content:space-between;gap:30px;flex-wrap:wrap;margin-bottom:38px}
+
 footer .logo{color:var(--paper)}
+
 .foot-links{display:flex;gap:22px;flex-wrap:wrap}
+
 .foot-links a{cursor:pointer}
+
 .foot-links a:hover{color:#fff}
+
 .copy{border-top:1px solid var(--line-d);padding-top:22px;font-family:var(--mono);font-size:10.5px;display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
 
 /* ===== legal modal ===== */
+
 .modal-bg{display:none;position:fixed;inset:0;background:rgba(13,17,23,.7);z-index:200;padding:20px;overflow-y:auto}
+
 .modal-bg.open{display:flex;align-items:flex-start;justify-content:center}
+
 .modal{background:#fff;max-width:680px;width:100%;margin:30px auto;padding:34px 30px;position:relative}
+
 .modal h3{font-family:var(--serif);font-size:19px;font-weight:800;margin-bottom:6px}
+
 .modal .m-draft{display:inline-block;font-size:10.5px;font-weight:700;color:var(--accent-deep);background:#FCEDE5;padding:2px 10px;margin-bottom:14px}
+
 .modal h4{font-size:13.5px;font-weight:900;margin:18px 0 6px}
+
 .modal p,.modal li{font-size:12.5px;color:var(--muted);line-height:1.9}
+
 .modal ul{padding-left:18px}
+
 .m-close{position:absolute;top:14px;right:14px;width:36px;height:36px;border:1px solid var(--line);background:#fff;font-size:15px;cursor:pointer;color:var(--muted)}
 
 /* ===== sticky cta ===== */
+
 .sticky-cta{display:none;position:fixed;bottom:0;left:0;right:0;z-index:90;background:var(--ink);padding:10px 14px;gap:10px}
+
 .sticky-cta .btn{flex:1;padding:15px 8px;font-size:13.5px}
 
 /* ===== reveal ===== */
+
 .rv{opacity:0;transform:translateY(22px);transition:opacity .7s ease,transform .7s ease}
+
 .rv.in{opacity:1;transform:none}
+
 @media(prefers-reduced-motion:reduce){*{transition:none!important}.rv{opacity:1;transform:none}}
 
 /* ===== mobile ===== */
+
 @media(max-width:880px){
+
   .hero::after,.case-sec::before,.pmo-band::after{display:none}
+
   .logo small{display:none}
+
   .case-num .to{font-size:clamp(64px,20vw,110px)}
+
   .case-num .from{font-size:clamp(26px,8vw,40px)}
+
   .band b{white-space:nowrap}
+
   section{padding:72px 0}
+
   .nav-links{display:none}
+
   .hero{padding-top:64px}
+
   .hero-inner{padding-bottom:72px}
+
   .hero-cta .btn{width:100%}
+
   .band .wrap{grid-template-columns:1fr 1fr 1fr}
+
   .band .b{padding:22px 8px}
+
   .band span{font-size:10px}
+
   .pain-item{grid-template-columns:1fr;gap:18px;padding:34px 0}
+
   .case-body{grid-template-columns:1fr;gap:18px}
+
   .steps{grid-template-columns:1fr}
+
   .step{border-right:none;border-bottom:1px solid var(--line)}
+
   .step:last-child{border-bottom:none}
+
   .plans{grid-template-columns:1fr}
+
   .catbox ul{grid-template-columns:1fr}
+
   .pmo-grid{grid-template-columns:1fr;gap:30px}
+
   .proj-row{grid-template-columns:1fr}
+
   .pj-side{text-align:left;display:flex;gap:14px;align-items:baseline}
+
   .fld-row{grid-template-columns:1fr}
+
   .form-box{padding:28px 18px}
+
   .form-tab{font-size:11.5px;padding:15px 4px}
+
   .alertbox{flex-direction:column;align-items:stretch}
+
   .sticky-cta{display:flex}
+
   body{padding-bottom:70px}
+
 }
 
 @media(max-width:400px){
+
   .wrap{padding:0 16px}
+
   .hero h1{font-size:34px;line-height:1.4}
+
   .hero .answer{font-size:18px}
+
   h2.head{font-size:26px;line-height:1.5}
+
   .case-num{gap:8px}
+
   .case-num .to{font-size:64px}
+
   .case-num .from{font-size:24px}
+
   .case-num .unit{font-size:16px}
+
   .band b{font-size:26px}
+
   .btn{padding:16px 22px;font-size:14px}
+
   .form-box{padding:22px 14px}
+
 }
+
 </style>
+
 </head>
+
 <body>
 
 <!-- ================= HEADER ================= -->
+
 <header>
+
   <div class="wrap nav">
+
     <a class="logo" href="#"><svg class="logo-mark" viewBox="0 0 44 50" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="2" y="8" width="24" height="7" rx="2" fill="currentColor"/><rect x="9" y="21" width="28" height="7" rx="2" fill="currentColor"/><rect x="16" y="34" width="20" height="7" rx="2" fill="#FF4D12"/></svg>ダンドリ<small>PMO代行マッチング</small></a>
+
     <nav class="nav-links">
+
       <a href="#projects">相談案件</a>
+
       <a href="#category">頼める業務</a>
+
       <a href="#plans">料金</a>
+
       <a href="#pmo">PMOの方へ</a>
+
       <a class="btn btn-fill" href="#consult">無料で相談する</a>
+
     </nav>
+
   </div>
+
 </header>
 
 <!-- ================= HERO ================= -->
+
 <div class="hero">
+
   <div class="wrap hero-inner">
+
     <span class="tag">PMO MATCHING — DANDORI</span>
+
     <h1>社長、<br>ぜんぶ自分で<br><em>やってませんか。</em></h1>
+
     <p class="answer">やると決めたのに、進まない。<br>足りないのは人手じゃない。<b>段取り</b>だ。</p>
-    <p class="body">「ダンドリ」は、審査を通過した“段取りのプロ”＝PMOから提案が届くマッチングサービス。常駐支援から、1時間のスポット相談まで。発注は、何度でも0円です。</p>
+
+    <p class="body">「ダンドリ」は、審査を通過した"段取りのプロ"＝PMOから提案が届くマッチングサービス。常駐支援から、1時間のスポット相談まで。発注は、何度でも0円です。</p>
+
     <div class="hero-cta">
+
       <a class="btn btn-fill" href="#consult">無料で相談する<span class="ar">→</span></a>
+
       <button class="btn btn-line" onclick="openLine()" type="button">LINEで相談</button>
+
     </div>
+
     <p class="note">業務委託のマッチングです。雇用の紹介・あっせんは行いません。</p>
+
   </div>
+
 </div>
 
 <!-- ================= NUMBERS ================= -->
+
 <div class="band">
+
   <div class="wrap">
+
     <div class="b"><b>0<small>円</small></b><span>発注利用料・成約手数料</span></div>
+
     <div class="b"><b>1<small>時間〜</small></b><span>スポットで頼める</span></div>
+
     <div class="b"><b>1<small>週間</small></b><span>最短アサイン</span></div>
+
   </div>
+
 </div>
 
 <!-- ================= PAIN ================= -->
+
 <section>
+
   <div class="wrap">
+
     <div class="kicker rv">FOR WHOM</div>
+
     <h2 class="head rv">心当たり、ありませんか。</h2>
+
     <div style="margin-top:46px">
+
       <div class="pain-item rv">
+
         <div class="q"><span class="n">01</span>会議が、報告会になっている。</div>
+
         <div class="a"><b>→ 「決める会議」に変えます。</b>進行のプロが論点を整理し、決定と宿題を必ず次へ繋ぎます。</div>
+
       </div>
+
       <div class="pain-item rv">
+
         <div class="q"><span class="n">02</span>プロジェクトの全体像が、社長の頭の中にしかない。</div>
+
         <div class="a"><b>→ 全部、見える化します。</b>計画・タスク・期限を棚卸しし、社長が居なくても回る形に。</div>
+
       </div>
+
       <div class="pain-item rv">
+
         <div class="q"><span class="n">03</span>ベンダー任せで、遅れに気づいた時には手遅れ。</div>
+
         <div class="a"><b>→ あなたの側に、管理者を置けます。</b>発注者の立場で進捗と品質を統制するプロが入ります。</div>
+
       </div>
+
     </div>
+
   </div>
+
 </section>
 
 <!-- ================= CASE ================= -->
+
 <section class="dark case-sec" id="case">
+
   <div class="wrap" style="position:relative;z-index:2">
+
     <div class="kicker rv">CASE — 美容・健康商材メーカー（従業員10名）</div>
+
     <h2 class="head rv">経営の段取りを任せて、2年。</h2>
+
     <div class="case-num rv">
+
       <span class="from" style="white-space:nowrap">年商2億</span><span class="ar">→</span><span style="white-space:nowrap;display:inline-flex;align-items:baseline;gap:4px"><span class="to">4</span><span class="unit">億円</span></span>
+
     </div>
+
     <p class="case-sub rv">社長がひとりで抱えていた施策が、いっせいに動き出した。</p>
+
     <div class="case-body rv">
+
       <p>「新商品開発、代理店の拡大、価格改定、展示会。やるべきことは見えているのに、ぜんぶ私が抱えて止まっていました。正直、PMOという言葉も知らなかった」——そう語る代表が任せたのは、週次の経営会議の事務局と、施策の実行管理。</p>
+
       <p>「決める・割り振る・刈り取る」のサイクルが回り始めると、販売管理の仕組み化、原価高騰に対応した価格改定、新チャネル開拓が並行で進行。約2年で年商は2倍に。「自社に経営企画室ができたようなもの。採用するより早く、安かった」。</p>
+
     </div>
+
     <div class="case-tags rv"><span>経営会議の事務局</span><span>販売管理の仕組み化</span><span>価格改定PJ</span><span>代理店網の拡大</span></div>
+
     <p class="case-note rv">※実際の支援事例に基づきます。成果を保証するものではなく、結果は企業の状況により異なります。</p>
+
     <p style="margin-top:36px" class="rv"><a class="btn btn-fill" href="#consult">うちの段取りも、相談する<span class="ar">→</span></a></p>
+
   </div>
+
 </section>
 
 <!-- ================= STEPS ================= -->
+
 <section>
+
   <div class="wrap">
+
     <div class="kicker rv">HOW IT WORKS</div>
+
     <h2 class="head rv">探さない。届く。</h2>
+
     <p class="lead rv" style="margin-bottom:46px">面倒な業者探しは、もう終わり。条件を送れば、合うプロの方から提案が来ます。</p>
+
     <div class="steps rv">
+
       <div class="step"><div class="n">01</div><h3>相談を送る</h3><p>課題と予算感を送るだけ。30秒。もちろん無料。LINEからでもOKです。</p></div>
+
       <div class="step"><div class="n">02</div><h3>提案が届く</h3><p>条件にマッチした審査済みPMOだけに相談が届き、提案する意思のあるプロからのみ連絡が来ます。営業電話はありません。</p></div>
+
       <div class="step"><div class="n">03</div><h3>比べて、決める</h3><p>面談して比較。合えば業務委託契約へ、合わなければ1クリックでお断り。契約の義務はありません。</p></div>
+
     </div>
+
     <div class="assure rv"><span style="font-size:20px">◆</span><p><b>マッチング保証：</b>5営業日以内に提案が集まらなければ、事務局が条件に合うプロを個別にお探しします。それでも見つからなければ、もちろん0円のままです。</p></div>
+
   </div>
+
 </section>
 
 <!-- ================= PLANS ================= -->
+
 <section id="plans" style="padding-top:0">
+
   <div class="wrap">
+
     <div class="kicker rv">PRICE</div>
+
     <h2 class="head rv">頼み方は3つ。<br>料金は、隠さない。</h2>
+
     <p class="lead rv" style="margin-bottom:46px">相場が見えないから、頼めない。だから先に、ぜんぶ公開します。<br>※掲載プロの目安です。仲介マージン・成果手数料は一切上乗せされません。</p>
+
     <div class="plans">
+
       <div class="plan rv">
+
         <h3>スポット</h3>
+
         <div class="p-for">プロの頭脳を、1時間だけ借りる。</div>
+
         <div class="p-price">1.5万円<small>〜／時</small></div>
+
         <ul>
+
           <li>壁打ち相談（セカンドオピニオン）</li>
+
           <li>計画書・WBSの作成代行 8万円〜</li>
+
           <li>定例会議のファシリ代行 3万円〜／回</li>
+
           <li>炎上PJの火消し診断 15万円〜</li>
+
         </ul>
+
       </div>
+
       <div class="plan hot rv">
+
         <span class="p-tag">いちばん選ばれています</span>
+
         <h3>伴走</h3>
+
         <div class="p-for">週1〜3日。実行管理をプロに任せる。</div>
+
         <div class="p-price">月15〜70<small>万円</small></div>
+
         <ul>
+
           <li>週次の実行管理・課題の刈り取り</li>
+
           <li>経営会議・定例会議の事務局運営</li>
+
           <li>PMO事務局の立ち上げ</li>
+
           <li>リモート中心・月イチ顧問もOK</li>
+
         </ul>
+
       </div>
+
       <div class="plan rv">
+
         <h3>常駐</h3>
+
         <div class="p-for">週4〜5日。大規模・緊急の現場に。</div>
+
         <div class="p-price">月80〜150<small>万円</small></div>
+
         <ul>
+
           <li>大規模システム刷新・工場立ち上げ</li>
+
           <li>マルチベンダーの統制</li>
+
           <li>炎上プロジェクトの立て直し</li>
+
         </ul>
+
       </div>
+
     </div>
+
     <p class="free-line rv">そして発注側は、何名と会っても、誰と契約しても——<b style="white-space:nowrap">0円。</b></p>
+
   </div>
+
 </section>
 
 <!-- ================= PROJECTS ================= -->
+
 <section style="background:var(--white);border-top:1px solid var(--line)" id="projects">
+
   <div class="wrap">
+
     <div class="kicker rv">OPEN PROJECTS</div>
+
     <h2 class="head rv">いま、この相談が動いている。</h2>
+
     <p class="proj-note rv" id="proj-note">※以下はサービス紹介用のサンプル案件です。</p>
+
     <div class="proj-list rv" id="proj-grid"></div>
+
     <div class="more-wrap" id="proj-more-wrap" style="display:none"><button class="btn btn-ghost" onclick="showAllProjects()">すべての案件を見る</button></div>
+
     <div class="alertbox rv">
+
       <div class="t">新着案件を受け取る<small>気になるカテゴリの案件が出たらお知らせ。掲載前の方もOK。</small></div>
+
       <input type="email" id="al-email" placeholder="メールアドレス">
+
       <select id="al-cat"><option value="すべて">すべてのカテゴリ</option><option>経営・新規事業</option><option>IT・システム開発</option><option>DX・業務改善</option><option>製造・生産</option><option>建設・店舗</option><option>マーケ・営業</option><option>バックオフィス</option><option>スポット相談</option></select>
+
       <button class="btn btn-fill" onclick="regAlert()">メールで登録</button>
+
       <button class="btn btn-line" onclick="openLine()">LINEで受け取る</button>
+
     </div>
+
   </div>
+
 </section>
 
 <!-- ================= CATEGORY ================= -->
+
 <section id="category">
+
   <div class="wrap">
+
     <div class="kicker rv">CATEGORY</div>
+
     <h2 class="head rv">150の業務、ぜんぶ頼める。</h2>
+
     <p class="lead rv" style="margin-bottom:42px">進捗管理から、火消し、補助金、IPO準備、新店オープンまで。業務名をクリックすると、そのまま相談フォームに入ります。</p>
+
     <div class="catlist rv" id="catlist"></div>
+
   </div>
+
 </section>
 
 <!-- ================= PMO BAND ================= -->
+
 <section class="dark pmo-band" id="pmo">
+
   <div class="wrap pmo-grid">
+
     <div>
+
       <div class="kicker rv">FOR PROFESSIONALS</div>
+
       <h2 class="head rv">その経験、<br>週末1時間から売れる。</h2>
+
       <p class="lead rv">大手で鍛えたプロジェクトマネジメントの腕。会社の外では、それを必要としている中小企業が待っています。現役のまま、副業で。独立して、本業で。</p>
+
       <div class="spot-menu rv"><span>壁打ち相談 月4件で約6万円</span><span>平日夜・週末だけOK</span><span>フルリモート可</span></div>
+
       <a class="btn btn-fill rv" href="#consult" onclick="openPmoTab()">掲載を申し込む<span class="ar">→</span></a>
+
       <p class="note rv" style="font-size:11px;color:var(--muted-d);margin-top:16px">※会社員の方は、ご所属企業の副業規定をご確認のうえお申し込みください。掲載は審査制です。</p>
+
     </div>
+
     <div class="pmo-price rv">
+
       <div class="row"><span>掲載料（月額・6ヶ月契約）</span><b>¥10,000<span style="font-size:11px;color:var(--muted-d)">／月 税込11,000円</span></b></div>
+
       <div class="row"><span>成果手数料</span><b>¥0</b></div>
+
       <div class="row"><span>報酬の取り分</span><b>100%</b></div>
+
       <div class="row"><span>先着20名（ファウンディング枠）</span><b>3ヶ月無料</b></div>
+
     </div>
+
   </div>
+
 </section>
 
 <!-- ================= FORM ================= -->
+
 <section id="consult">
+
   <div class="wrap">
+
     <div class="kicker rv" style="justify-content:center">CONTACT</div>
+
     <h2 class="head rv" style="text-align:center">さあ、段取りを始めよう。</h2>
+
     <p class="lead rv" style="text-align:center;margin:0 auto 40px">送信後、1営業日以内に事務局からご連絡します。</p>
+
     <div class="rv">
+
       <div class="line-banner">
+
         <p><b>フォームが面倒な方へ：</b>LINEで「PMOを探したい」と送るだけでもOK。事務局がチャットでヒアリングします。</p>
+
         <button class="btn btn-line" onclick="openLine()">LINEで気軽に相談</button>
+
       </div>
+
       <div class="form-tabs">
+
         <button class="form-tab on" data-f="client">発注したい企業の方</button>
+
         <button class="form-tab" data-f="pmo">掲載したいPMOの方</button>
+
       </div>
+
       <div class="form-box">
+
         <!-- 発注 -->
+
         <div class="fpanel on" id="fp-client">
+
           <form id="client-form"><input type="hidden" name="_subject" value="【ダンドリ】発注の一括相談">
+
             <div class="fld-row">
+
               <div class="fld"><label>会社名<i>必須</i></label><input type="text" name="会社名" required placeholder="株式会社サンプル"></div>
+
               <div class="fld"><label>ご担当者名<i>必須</i></label><input type="text" name="お名前" required placeholder="山田 太郎"></div>
+
             </div>
+
             <div class="fld-row">
+
               <div class="fld"><label>メールアドレス<i>必須</i></label><input type="email" name="メールアドレス" required placeholder="taro@example.com"></div>
+
               <div class="fld"><label>ご予算の目安</label>
+
                 <select name="予算"><option value="">相談して決めたい</option><option>月10万円まで（スポット中心）</option><option>月10〜30万円</option><option>月30〜60万円</option><option>月60〜100万円</option><option>月100万円以上</option></select></div>
+
             </div>
+
             <div class="fld-row">
+
               <div class="fld"><label>相談カテゴリ<i>必須</i></label>
+
                 <select id="c-cat" name="相談カテゴリ" required><option value="">選択してください</option><option>経営・新規事業PMO</option><option>IT・システム開発PMO</option><option>DX・業務改善PMO</option><option>製造・生産PMO</option><option>建設・店舗PMO</option><option>マーケ・営業PMO</option><option>バックオフィスPMO</option><option>人事・組織PMO</option><option>医療・介護・ヘルスケアPMO</option><option>物流・サプライチェーンPMO</option><option>飲食・小売・サービスPMO</option><option>補助金・公共PMO</option><option>環境・エネルギーPMO</option><option>スポット相談（ピンポイントPMO）</option></select></div>
+
               <div class="fld"><label>希望の支援スタイル</label>
+
                 <select id="c-style" name="支援スタイル"><option value="">相談して決めたい</option><option>常駐（週4〜5日）</option><option>ハーフコミット（週2〜3日）</option><option>リモート伴走（週1日〜）</option><option>スポット相談（1時間〜）</option></select></div>
+
             </div>
+
             <div class="fld-row">
+
               <div class="fld"><label>提案を受けたい人数</label>
+
                 <select name="提案を受けたい人数"><option>3名まで（おすすめ）</option><option>5名まで</option><option>10名まで</option><option>1名（事務局おまかせ）</option></select></div>
+
               <div class="fld"><label>相談したい業務</label><input type="text" id="c-task" name="相談したい業務" placeholder="例：定例会議ファシリ代行 など"></div>
+
             </div>
+
             <div class="fld"><label>相談内容<i>必須</i></label><textarea name="相談内容" required placeholder="プロジェクトの概要・現在の課題・希望時期などをご記入ください"></textarea></div>
+
             <label class="consent"><input type="checkbox" required><span><a onclick="openLegal('terms')">利用規約</a>・<a onclick="openLegal('privacy')">プライバシーポリシー</a>に同意します<i style="font-style:normal;font-size:10px;color:#fff;background:var(--accent);padding:1px 8px;margin-left:8px">必須</i></span></label>
+
             <label class="consent"><input type="checkbox" required><span>本サービスが業務委託のマッチングであり、雇用契約の紹介・あっせんではないことを理解しました<i style="font-style:normal;font-size:10px;color:#fff;background:var(--accent);padding:1px 8px;margin-left:8px">必須</i></span></label>
+
             <label class="consent"><input type="checkbox"><span>新着PMO・お役立ち情報のお知らせメールを受け取る（任意）</span></label>
+
             <button class="btn btn-fill" type="submit" style="width:100%">この内容で一括相談する（無料）</button>
+
             <p style="font-size:11px;color:var(--muted);margin-top:12px">営業電話は一切ありません。ご契約の際は、取引条件の書面明示と報酬の60日以内支払い（フリーランス新法）にご協力をお願いしています。</p>
+
           </form>
+
           <div class="form-done" id="client-done"><div class="ok">✓</div><h3 style="font-family:var(--serif);font-weight:800;margin-bottom:6px">相談を受け付けました</h3><p style="font-size:13px;color:var(--muted)">条件にマッチしたPMOからの提案を、平均1〜2営業日でお届けします。</p></div>
+
         </div>
+
         <!-- PMO -->
+
         <div class="fpanel" id="fp-pmo">
+
           <form id="pmo-form"><input type="hidden" name="_subject" value="【ダンドリ】PMO掲載申込">
+
             <div class="fld-row">
+
               <div class="fld"><label>お名前<i>必須</i></label><input type="text" name="お名前" required placeholder="山田 太郎"></div>
+
               <div class="fld"><label>メールアドレス<i>必須</i></label><input type="email" name="メールアドレス" required placeholder="taro@example.com"></div>
+
             </div>
+
             <div class="fld-row">
+
               <div class="fld"><label>働き方<i>必須</i></label>
+
                 <select name="働き方" required><option value="">選択してください</option><option>独立・フリーランス</option><option>副業（会社員）※副業規定確認済み</option><option>法人として掲載</option></select></div>
+
               <div class="fld"><label>PMO実務経験年数<i>必須</i></label>
+
                 <select name="経験年数" required><option value="">選択してください</option><option>3年未満</option><option>3〜5年</option><option>5〜10年</option><option>10年以上</option></select></div>
+
             </div>
+
             <div class="fld-row">
+
               <div class="fld"><label>得意な業界<i>必須</i></label>
+
                 <select name="得意業界" required><option value="">選択してください</option><option>IT・システム</option><option>製造</option><option>建設・不動産</option><option>医療・ヘルスケア</option><option>金融</option><option>小売・EC</option><option>美容・ヘルスケア</option><option>官公庁・自治体</option><option>その他</option></select></div>
+
               <div class="fld"><label>対応可能な稼働<i>必須</i></label>
+
                 <select name="対応可能な稼働" required><option value="">選択してください</option><option>常駐可（週4〜5日）</option><option>週2〜3日</option><option>週1日・リモート</option><option>スポットのみ（平日夜・週末）</option></select></div>
+
             </div>
+
             <div class="fld"><label>実績・自己PR</label><textarea name="実績・自己PR" placeholder="担当プロジェクトの規模・体制・役割、提供できるスポットメニューなど"></textarea></div>
+
             <label class="consent"><input type="checkbox" required><span><a onclick="openLegal('terms')">利用規約</a>・<a onclick="openLegal('privacy')">プライバシーポリシー</a>・<a onclick="openLegal('tokusho')">特定商取引法に基づく表記</a>に同意します<i style="font-style:normal;font-size:10px;color:#fff;background:var(--accent);padding:1px 8px;margin-left:8px">必須</i></span></label>
+
             <label class="consent"><input type="checkbox" required><span>受注は業務委託契約であり、発注企業の指揮命令下で労働するもの（偽装請負）ではないことを理解しました<i style="font-style:normal;font-size:10px;color:#fff;background:var(--accent);padding:1px 8px;margin-left:8px">必須</i></span></label>
+
             <label class="consent"><input type="checkbox" required><span>本サービス経由で知り合った相手との直接取引（成約後6ヶ月間）が禁止されていることに同意します<i style="font-style:normal;font-size:10px;color:#fff;background:var(--accent);padding:1px 8px;margin-left:8px">必須</i></span></label>
+
             <button class="btn btn-fill" type="submit" style="width:100%">掲載を申し込む（審査制・先着20名は3ヶ月無料）</button>
+
             <p style="font-size:11px;color:var(--muted);margin-top:12px">審査結果は3営業日以内にお送りします。会社員の方は、ご所属企業の副業規定・守秘義務・競業避止条項を必ずご確認ください。</p>
+
           </form>
+
           <div class="form-done" id="pmo-done"><div class="ok">✓</div><h3 style="font-family:var(--serif);font-weight:800;margin-bottom:6px">申し込みを受け付けました</h3><p style="font-size:13px;color:var(--muted)">審査結果と掲載手続きのご案内を3営業日以内にメールでお送りします。</p><button class="btn btn-ghost" style="margin-top:18px" onclick="openPay()">掲載料のお支払いについて（カード決済／Stripe）</button><p style="font-size:11px;color:var(--muted);margin-top:10px">※お支払いは審査通過後です。ファウンディング枠は3ヶ月無料のため、4ヶ月目から課金されます。</p></div>
+
         </div>
+
       </div>
+
     </div>
+
   </div>
+
 </section>
 
 <!-- ================= FAQ ================= -->
+
 <section style="padding-top:0">
+
   <div class="wrap">
+
     <div class="kicker rv" style="justify-content:center">FAQ</div>
+
     <h2 class="head rv" style="text-align:center">よくある質問</h2>
+
     <div class="faq">
+
       <details class="rv"><summary>発注企業に費用はかかりますか？</summary><div class="a">かかりません。相談・面談・成約まで、発注企業さまの利用はすべて無料です。掲載PMO側の月額掲載料で運営しています。</div></details>
+
       <details class="rv"><summary>必ず契約しなければいけませんか？</summary><div class="a">いいえ。届いた提案を比較して、合わなければ1クリックでお断りできます。契約の義務は一切ありません。</div></details>
+
       <details class="rv"><summary>1時間だけの相談でも依頼できますか？</summary><div class="a">できます。壁打ち相談（1時間〜）、会議ファシリ代行、計画書作成代行など、業務単位での依頼が可能です。</div></details>
+
       <details class="rv"><summary>会社員の副業でも掲載できますか？</summary><div class="a">掲載できます。平日夜・週末のスポット対応のみでもOKです。ご所属企業の副業規定をご確認のうえお申し込みください。守秘義務・競業避止のガイドラインも事務局からご案内します。</div></details>
+
       <details class="rv"><summary>PMO側に成果報酬はかかりますか？</summary><div class="a">かかりません。月額10,000円（税込11,000円）の定額のみで、何件成約しても手数料は0円。報酬は100%受注者のものです。</div></details>
+
       <details class="rv"><summary>契約形態はどうなりますか？</summary><div class="a">発注企業とPMOの間の業務委託契約です。雇用契約（人材紹介・派遣）の仲介は行っていません。契約書ひな形の提供や条件のすり合わせは事務局がサポートします。</div></details>
+
       <details class="rv"><summary>紹介されたPMOと直接契約してもいいですか？</summary><div class="a">成約後6ヶ月間は、本サービスを介さない直接取引を利用規約で禁止しています。期間経過後の継続取引は自由です。</div></details>
+
       <details class="rv"><summary>常駐の場合、偽装請負になりませんか？</summary><div class="a">業務委託では、発注企業がPMOに直接の指揮命令を行うことはできません。成果物・役割ベースの契約となるよう、契約書ひな形とガイドラインを事務局からご案内しています。</div></details>
+
       <details class="rv"><summary>掲載プランの解約はいつでもできますか？</summary><div class="a">解約申請はいつでも可能です。契約は6ヶ月単位のため、契約期間満了をもって終了します。ファウンディングメンバー枠は契約縛りなしで解約できます。</div></details>
+
     </div>
+
   </div>
+
 </section>
 
 <!-- ================= FOOTER ================= -->
+
 <footer>
+
   <div class="wrap">
+
     <div class="foot-grid">
+
       <div>
+
         <a class="logo" href="#"><svg class="logo-mark" viewBox="0 0 44 50" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="2" y="8" width="24" height="7" rx="2" fill="currentColor"/><rect x="9" y="21" width="28" height="7" rx="2" fill="currentColor"/><rect x="16" y="34" width="20" height="7" rx="2" fill="#FF4D12"/></svg>ダンドリ</a>
+
         <p style="margin-top:12px;font-size:12px">PMO代行マッチング「ダンドリ」<br>運営：ARK株式会社<br><span style="font-size:11px">本サービスは業務委託のマッチングであり、雇用の紹介・あっせんは行いません。</span></p>
+
       </div>
+
       <div class="foot-links">
+
         <a href="#projects">相談案件</a>
+
         <a href="#category">頼める業務</a>
+
         <a href="#plans">料金</a>
+
         <a onclick="openLegal('terms')">利用規約</a>
+
         <a onclick="openLegal('privacy')">プライバシーポリシー</a>
+
         <a onclick="openLegal('tokusho')">特定商取引法に基づく表記</a>
+
         <a onclick="openLine()" style="color:#06C755;font-weight:700">LINE公式アカウント</a>
+
       </div>
+
     </div>
+
     <div class="copy"><span>© 2026 DANDORI / ARK Inc. All rights reserved.</span><span>DANDORI — GET THINGS MOVING.</span></div>
+
   </div>
+
 </footer>
 
 <div class="sticky-cta">
+
   <a class="btn btn-fill" href="#consult">無料で相談する</a>
+
   <button class="btn btn-line" onclick="openLine()">LINEで相談</button>
+
 </div>
 
 <!-- ================= LEGAL MODAL ================= -->
+
 <div class="modal-bg" id="modal-bg" onclick="if(event.target===this)closeLegal()">
+
   <div class="modal"><button class="m-close" onclick="closeLegal()">✕</button><div id="modal-body"></div></div>
+
 </div>
 
 <script>
+
 /* ====== 運用設定（開業時にここだけ設定すれば実機能が有効になります）======
+
    NOTIFY_EMAIL : 通知を受け取るメールアドレス。設定するとフォームがFormSubmit経由で実送信されます。
+
    STRIPE_LINK  : Stripeダッシュボードで作成した「支払いリンク」URL。設定すると決済ボタンが有効になります。
+
    PROJECTS_URL : Googleスプレッドシート「ウェブに公開（CSV）」のURL。設定すると実案件がリアルタイム表示されます。
+
                   1行目は見出し：タイトル,カテゴリ,予算,地域,稼働,内容,参加数,経過日数,注目
+
                   【重要】公開CSVは誰でも閲覧できます。社名・氏名・連絡先など個人情報は絶対に書かないでください。
+
    LINE_URL     : LINE公式アカウントの友だち追加URL（https://lin.ee/xxxx）。 */
-const CONFIG={NOTIFY_EMAIL:"",STRIPE_LINK:"",PROJECTS_URL:"",LINE_URL:""};
+
+const CONFIG={NOTIFY_EMAIL:"y.moz.fleet@gmail.com",STRIPE_LINK:"https://buy.stripe.com/9B64gBalc9jbd9mfzt33W04",PROJECTS_URL:"projects.csv",LINE_URL:"https://lin.ee/zKAdLzsf"};
 
 /* ---------- utils ---------- */
+
 function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+
 function relTime(d){return d<=0?"本日":(d>=30?"30日以上前":d+"日前");}
 
 /* ---------- mail / pay / line ---------- */
+
 async function sendForm(form,doneId){
+
   if(CONFIG.NOTIFY_EMAIL){
+
     try{await fetch("https://formsubmit.co/ajax/"+encodeURIComponent(CONFIG.NOTIFY_EMAIL),{method:"POST",headers:{Accept:"application/json"},body:new FormData(form)});}
+
     catch(err){console.warn("mail send failed",err);}
+
   }
+
   form.style.display="none";document.getElementById(doneId).classList.add("show");
+
 }
+
 function openPay(){
+
   if(CONFIG.STRIPE_LINK){window.open(CONFIG.STRIPE_LINK,"_blank");}
+
   else{alert("お支払いはクレジットカード（Stripe）です。審査通過後、事務局から決済リンクをご案内します。");}
+
 }
+
 function openLine(){
+
   if(CONFIG.LINE_URL){window.open(CONFIG.LINE_URL,"_blank");}
+
   else{alert("LINE公式アカウントは準備中です。まずはフォームからご相談ください。");}
+
 }
+
 function regAlert(){
+
   const em=document.getElementById("al-email").value.trim(),c=document.getElementById("al-cat").value;
+
   if(!em||!em.includes("@")){alert("メールアドレスを入力してください");return;}
+
   if(CONFIG.NOTIFY_EMAIL){
+
     const fd=new FormData();fd.append("_subject","【ダンドリ】案件アラート登録");fd.append("メール",em);fd.append("カテゴリ",c);
+
     fetch("https://formsubmit.co/ajax/"+encodeURIComponent(CONFIG.NOTIFY_EMAIL),{method:"POST",headers:{Accept:"application/json"},body:fd}).catch(()=>{});
+
   }
+
   document.querySelector(".alertbox").innerHTML='<div class="t">登録しました。'+esc(c)+'の新着案件をお知らせします。<small>配信はいつでも停止できます。</small></div>';
+
 }
 
 /* ---------- projects (Googleシート連携・サンプル自動切替) ---------- */
+
 const SAMPLE_PROJECTS=[
+
  {title:"【基幹システム刷新】進捗管理の見積もり依頼",cat:"製造・生産PMO",budget:"月40万円まで",area:"愛知県",style:"週2日希望",joined:5,days:0,hot:true},
+
  {title:"【新規事業立ち上げ】経営会議の事務局とPMO伴走",cat:"経営・新規事業PMO",budget:"月50万円まで",area:"東京都",style:"週1日＋リモート",joined:6,days:1,hot:true},
+
  {title:"【ECサイト構築】炎上プロジェクトの火消し相談",cat:"IT・システム開発PMO",budget:"相談して決めたい",area:"東京都",style:"至急",joined:7,days:2,hot:false},
+
  {title:"【週1回・2時間】進捗会議のファシリテーション依頼",cat:"スポット相談",budget:"月12万円まで",area:"フルリモート",style:"平日夜OK",joined:8,days:3,hot:false},
+
  {title:"【補助金採択後】設備投資プロジェクトの工程・予算管理",cat:"補助金・公共PMO",budget:"月30万円まで",area:"大阪府",style:"週1日",joined:4,days:4,hot:false},
+
  {title:"【年10店舗出店】出店プロジェクト管理の相談",cat:"飲食・小売・サービスPMO",budget:"相談して決めたい",area:"神奈川県",style:"",joined:3,days:5,hot:false}
+
 ];
+
 function renderProjects(list,isSample){
+
   window._projList=list;window._projSample=isSample;
+
   const note=document.getElementById("proj-note");
+
   note.textContent=isSample?"※以下はサービス紹介用のサンプル案件です。":"※実際に募集中の案件です。";
+
   note.style.color=isSample?"var(--accent-deep)":"var(--ink)";
+
   const show=window._allProj?list:list.slice(0,4);
+
   document.getElementById("proj-grid").innerHTML=show.map(p=>`
+
    <div class="proj-row">
+
      <div>
+
        <h4>${p.hot?'<span class="hot">人気</span>':''}${esc(p.title)}</h4>
-       <div class="pj-meta"><span class="bd">予算 ${esc(p.budget)}</span><span>${esc(p.area)}</span>${p.style?`<span>${esc(p.style)}</span>`:""}<span>${esc(p.cat)}</span></div>
+
+       <div class="pj-meta"><span class="bd">予算 ${esc(p.budget)}</span><span>${esc(p.area)}</span>${p.style?'<span>'+esc(p.style)+'</span>':""}<span>${esc(p.cat)}</span></div>
+
      </div>
+
      <div class="pj-side"><b>参加 ${p.joined}名</b>${relTime(p.days)}</div>
+
    </div>`).join("");
+
   document.getElementById("proj-more-wrap").style.display=(list.length>4&&!window._allProj)?"block":"none";
+
 }
+
 function showAllProjects(){window._allProj=true;renderProjects(window._projList,window._projSample);}
+
 function parseCSV(t){
+
   return t.trim().split(/\r?\n/).map(r=>{
+
     const out=[];let cur="",q=false;
+
     for(const ch of r){if(ch==='"'){q=!q}else if(ch===','&&!q){out.push(cur);cur=""}else cur+=ch}
+
     out.push(cur);return out;
+
   });
+
 }
+
 async function loadProjects(){
+
   if(CONFIG.PROJECTS_URL){
+
     try{
+
       const t=await(await fetch(CONFIG.PROJECTS_URL)).text();
+
       const rows=parseCSV(t),h=rows[0],ix=n=>h.indexOf(n);
+
       const list=rows.slice(1).filter(r=>r[ix("タイトル")]).map(r=>({
+
         title:r[ix("タイトル")],cat:r[ix("カテゴリ")]||"PMO",budget:r[ix("予算")]||"相談して決めたい",
+
         area:r[ix("地域")]||"リモート",style:r[ix("稼働")]||"",
+
         joined:+(r[ix("参加数")]||0),days:+(r[ix("経過日数")]||0),hot:String(r[ix("注目")]||"")==="1"}));
+
       if(list.length){renderProjects(list,false);return;}
+
     }catch(err){console.warn("projects load failed",err);}
+
   }
+
   renderProjects(SAMPLE_PROJECTS,true);
+
 }
+
 loadProjects();
 
 /* ---------- categories ---------- */
+
 const CATMAP={"経営・新規事業":"経営・新規事業PMO","IT・システム開発":"IT・システム開発PMO","DX・業務改善":"DX・業務改善PMO","製造・生産":"製造・生産PMO","建設・店舗":"建設・店舗PMO","マーケ・営業":"マーケ・営業PMO","バックオフィス":"バックオフィスPMO","スポット相談":"スポット相談（ピンポイントPMO）","医療・介護・ヘルスケア":"医療・介護・ヘルスケアPMO","物流・サプライチェーン":"物流・サプライチェーンPMO","人事・組織":"人事・組織PMO","補助金・公共":"補助金・公共PMO","飲食・小売・サービス":"飲食・小売・サービスPMO","環境・エネルギー":"環境・エネルギーPMO"};
+
 const CATLIST=[
+
  {name:"経営・新規事業PMO",key:"経営・新規事業",links:["新規事業立ち上げの伴走","経営会議・幹部会議の事務局","事業計画の実行管理","中期経営計画の実行管理","補助金採択後のPJ管理","M&A・PMI統合管理","事業承継プロジェクト","フランチャイズ展開の管理","海外展開プロジェクト","資金調達PJの管理","アライアンス・合弁の管理","撤退・事業整理の管理"]},
+
  {name:"IT・システム開発PMO",key:"IT・システム開発",links:["進捗・スケジュール管理","課題・リスク管理","ベンダー管理","品質管理・テスト計画","要件定義の伴走支援","PMO事務局の立ち上げ","基幹システム刷新","クラウド移行（AWS/Azure）","セキュリティ対策PJ（ISMS）","データ移行の管理","保守運用体制の構築","アジャイル・スクラム導入","PM管理ツール導入","炎上PJの立て直し","開発内製化の支援"]},
+
  {name:"DX・業務改善PMO",key:"DX・業務改善",links:["DX推進室の立ち上げ","業務フロー可視化・BPR","SaaS導入PJ管理","ノーコード開発・内製化","RPA・AI-OCR導入の推進","データ基盤・BI構築","生成AI導入プロジェクト","電子契約・ペーパーレス推進","情シス機能の立ち上げ","BPO切替の管理","IT導入補助金PJ管理"]},
+
  {name:"製造・生産PMO",key:"製造・生産",links:["新工場・新ライン立ち上げ","生産管理システム導入","原価管理・原価低減PJ","TPS・カイゼン推進","5S・見える化の定着支援","品質保証体制の構築","品質不正の再発防止PJ","IoT・スマートファクトリー","設備投資PJ管理","OEM・外注先の管理","在庫削減プロジェクト","技能伝承・標準書整備","BCP策定"]},
+
  {name:"建設・店舗PMO",key:"建設・店舗",links:["発注者支援（CM方式）","工程管理・工程会議運営","予算統制・コスト管理","設計・施工者の選定支援","多店舗展開の出店管理","改修工事管理","BIM/CIM導入の管理","施工管理アプリ導入","安全管理体制の構築","再開発プロジェクト支援"]},
+
  {name:"マーケ・営業PMO",key:"マーケ・営業",links:["EC立ち上げプロジェクト","越境EC・海外販売立ち上げ","展示会出展PJ管理","サイトリニューアル管理","SFA/CRM導入の推進","SNS運用体制の構築","広告代理店の管理（発注者側）","代理店網構築の管理","会員制度・ポイント施策","新商品ローンチ管理","価格改定プロジェクト"]},
+
  {name:"バックオフィスPMO",key:"バックオフィス",links:["ERP・会計システム導入","経理DX（freee/MF導入）","インボイス・電帳法対応","人事制度改定PJ","IPO準備のPMO","内部統制・J-SOX対応","監査対応プロジェクト","規程・契約管理体制の整備","総務BPO切替の管理","オフィス移転PJ"]},
+
  {name:"人事・組織PMO",key:"人事・組織",links:["採用プロジェクトの管理","人事評価制度の構築PJ","教育研修体系の構築","タレントマネジメント導入","エンゲージメント改善PJ","組織再編・統合の管理","退職金・等級制度の改定PJ","HRテック導入（労務・勤怠）"]},
+
  {name:"医療・介護・ヘルスケアPMO",key:"医療・介護・ヘルスケア",links:["クリニック・施設の開設PJ","電子カルテ・予約システム導入","介護事業所の立ち上げ","医療機器開発の管理（QMS/ISO13485）","薬機法対応プロジェクト","訪問看護・在宅事業の立ち上げ","健診・ヘルスケア事業の立ち上げ"]},
+
  {name:"物流・サプライチェーンPMO",key:"物流・サプライチェーン",links:["倉庫移転・立ち上げPJ","WMS・在庫管理システム導入","3PL切替の管理","輸出入・通関体制の構築","共同配送・物流改善PJ","2024年問題対応（運行管理）","在庫最適化プロジェクト"]},
+
  {name:"飲食・小売・サービスPMO",key:"飲食・小売・サービス",links:["新店オープンの管理","FC加盟・立ち上げ支援","メニュー・商品開発PJ","POS・モバイルオーダー導入","HACCP・衛生管理体制","多店舗オペレーション標準化","セントラルキッチン立ち上げ"]},
+
  {name:"補助金・公共PMO",key:"補助金・公共",links:["ものづくり補助金のPJ管理","事業再構築・省力化補助金の管理","IT導入補助金のPJ管理","実績報告・交付申請の進行管理","自治体実証事業の管理","入札・プロポーザル対応","産学連携プロジェクトの管理"]},
+
  {name:"環境・エネルギーPMO",key:"環境・エネルギー",links:["省エネ設備導入PJ","太陽光・蓄電池導入の管理","GX・脱炭素計画の実行管理","ISO14001取得プロジェクト","産廃・リサイクル体制の構築"]},
+
  {name:"スポット相談（ピンポイントPMO）",key:"スポット相談",links:["壁打ち相談（1時間〜）","計画書・WBS作成代行","提案書・稟議書レビュー","定例会議ファシリ代行","議事録・課題表の整備","KPI・ダッシュボード設計","ベンダー見積もり査定","リスク洗い出しワークショップ","PJ健全性診断（PJ監査）","炎上PJ火消し診断","PM代打（産休・退職時）","月イチ顧問PMO","PM人材育成・社内研修"]}
+
 ];
+
 document.getElementById("catlist").innerHTML=CATLIST.map((c,i)=>`
+
  <div class="catbox${i===0?" open":""}">
+
    <button class="cb-head" onclick="this.parentElement.classList.toggle('open')"><h3>${c.name}</h3><span class="chev">＋</span></button>
-   <ul>${c.links.map(l=>`<li><button onclick="pickTask('${c.key}','${l}')">${l}</button></li>`).join("")}</ul>
+
+   <ul>${c.links.map(l=>'<li><button onclick="pickTask(\''+c.key+'\',\''+l+'\')">'+l+'</button></li>').join("")}</ul>
+
  </div>`).join("");
+
 function presetCat(name){const v=CATMAP[name]||"";if(v)document.getElementById("c-cat").value=v;openClientTab();}
+
 function pickTask(cat,task){
+
   presetCat(cat);
+
   const f=document.getElementById("c-task");
+
   f.value=f.value?(f.value.includes(task)?f.value:f.value+"、"+task):task;
+
   location.hash="#consult";
+
 }
 
 /* ---------- form tabs ---------- */
+
 const ftabs=document.querySelectorAll(".form-tab");
+
 function showTab(key){
+
   ftabs.forEach(t=>t.classList.toggle("on",t.dataset.f===key));
+
   document.getElementById("fp-client").classList.toggle("on",key==="client");
+
   document.getElementById("fp-pmo").classList.toggle("on",key==="pmo");
+
 }
+
 ftabs.forEach(t=>t.addEventListener("click",()=>showTab(t.dataset.f)));
+
 function openClientTab(){showTab("client")}
+
 function openPmoTab(){showTab("pmo")}
+
 document.getElementById("client-form").addEventListener("submit",e=>{e.preventDefault();sendForm(e.target,"client-done");});
+
 document.getElementById("pmo-form").addEventListener("submit",e=>{e.preventDefault();sendForm(e.target,"pmo-done");});
 
 /* ---------- legal ---------- */
+
 const LEGAL={
+
 terms:`<h3>利用規約</h3><span class="m-draft">ドラフト版｜本格運用の前に弁護士・行政書士等の確認を受けてください（確認完了までこの注記は削除しないこと）</span>
+
 <h4>第1条（本サービスの性質）</h4><p>「ダンドリ」（以下「本サービス」）は、ARK株式会社（以下「当社」）が運営する、業務委託契約の締結機会を提供するマッチングサービスです。当社は職業安定法上の職業紹介（雇用契約のあっせん）および労働者派遣は一切行いません。発注会員は、本サービスを通じて知り合った受注会員を雇用契約に勧誘してはなりません。</p>
+
 <h4>第2条（会員登録・審査）</h4><p>受注会員（PMO）の掲載には当社所定の審査（実務経験・本人確認）があります。虚偽の申告が判明した場合、当社は登録を取り消すことができます。</p>
+
 <h4>第3条（契約の当事者）</h4><p>業務委託契約は発注会員と受注会員の間で直接締結され、当社は契約の当事者となりません。当社は契約書ひな形の提供等のサポートを行いますが、契約内容・履行・成果について保証しません。</p>
+
 <h4>第4条（料金）</h4><p>発注会員の利用料は無料です。受注会員の掲載プランは月額10,000円（税込11,000円）、6ヶ月単位の自動更新です。解約申請はいつでも可能で、申請した契約期間の満了をもって終了します。日割り返金は行いません。</p>
+
 <h4>第5条（直接取引の禁止）</h4><p>会員は、本サービスを通じて知り合った相手方と、成約後6ヶ月間、本サービスを介さずに直接取引をしてはなりません。違反した場合、当社は当該取引額の20%相当額を違約金として請求できるものとします。</p>
+
 <h4>第6条（適正な業務委託・フリーランス新法の遵守）</h4><p>発注会員は、特定受託事業者に係る取引の適正化等に関する法律（フリーランス新法）に基づき、取引条件の明示、報酬の60日以内の支払い、ハラスメント対策等を遵守するものとします。また、受注会員に対して労働者に対するような直接の指揮命令を行ってはなりません（偽装請負の禁止）。</p>
+
 <h4>第7条（禁止事項）</h4><ul><li>虚偽の情報の登録・掲載</li><li>雇用契約への勧誘・引き抜き</li><li>本サービス外への誘導による手数料回避</li><li>法令・公序良俗に反する行為</li></ul>
+
 <h4>第8条（免責・規約の変更・準拠法）</h4><p>当社は、会員間の取引に起因する損害について責任を負いません。ただし、当社の故意又は過失による場合はこの限りではなく、当社が消費者に対して負う損害賠償責任は、消費者契約法その他の強行法規に反しない範囲で制限されるものとします。当社は本規約を変更でき、変更後の規約は本サービス上での掲示により効力を生じます。本規約は日本法に準拠し、東京地方裁判所を第一審の専属的合意管轄裁判所とします。</p>`,
+
 privacy:`<h3>プライバシーポリシー</h3><span class="m-draft">ドラフト版｜公開前に専門家による確認を行ってください</span>
+
 <h4>1. 取得する情報</h4><p>会社名、氏名、メールアドレス、電話番号、経歴・実績情報、相談内容、本サービスの利用履歴。</p>
+
 <h4>2. 利用目的</h4><ul><li>マッチングの提供（相談内容を条件に合致する受注会員へ提示するためを含む）</li><li>お問い合わせ内容の分類・要約・候補選定の補助（外部AIサービスを利用します。第4項参照）</li><li>本人確認・審査</li><li>料金の請求・決済</li><li>お知らせメールの配信（同意を得た方のみ・配信停止可能）</li><li>サービス改善のための統計分析（個人を識別できない形式）</li></ul>
+
 <h4>3. 連絡先情報の開示</h4><p>氏名・連絡先等の個人情報は、契約申請が成立するまで相手方会員に開示されません。契約申請の成立をもって、相手方への開示に同意いただいたものとします。</p>
+
 <h4>4. 外部サービスへの処理委託</h4><p>当社は、サービス提供のため以下の外部サービスに業務の一部を委託し、必要な範囲で情報を処理します。委託先には適切な管理を求めます。</p><ul><li>お問い合わせ内容の分類・要約・候補選定の補助：Anthropic社の生成AIサービス（Claude API）。送信前に社名・氏名・連絡先等の個人を特定する情報を除去・匿名化するよう努めます。</li><li>決済処理：Stripe社（クレジットカード情報は当社では保持しません）。</li><li>フォーム送信・メール配信、データ保管：Google社等のクラウドサービス。</li></ul><h4>5. 第三者提供</h4><p>前各項および法令に基づく場合を除き、本人の同意なく第三者に提供しません。</p>
+
 <h4>6. 安全管理・開示請求</h4><p>当社は個人情報保護法に基づき適切な安全管理措置を講じます。保有個人データの開示・訂正・削除のご請求は、下記窓口までご連絡ください。<br>窓口：ARK株式会社 個人情報担当（y.moz.fleet@gmail.com）</p>`,
+
 tokusho:`<h3>特定商取引法に基づく表記</h3><span class="m-draft">ドラフト版｜【 】内は開業時に正式情報を記載してください</span>
+
 <h4>販売事業者</h4><p>ARK株式会社</p>
+
 <h4>代表者</h4><p>茂住 雄太</p>
+
 <h4>所在地</h4><p>東京都中野区江原町2-13-13</p><h4>電話番号</h4><p>お問い合わせは本サイトのフォームまたはメールにて承ります（電話番号はご請求があった場合に遅滞なく開示します）。</p><h4>お問い合わせ窓口（メール）</h4><p>y.moz.fleet@gmail.com</p>
+
 <h4>販売価格</h4><p>掲載プラン：月額10,000円（税込11,000円）。発注企業の利用は無料です。</p>
+
 <h4>支払方法・時期</h4><p>クレジットカードによる月額自動決済（初回は審査通過後の掲載開始日に課金）。</p>
+
 <h4>役務の提供時期</h4><p>決済完了後、ただちに掲載を開始します。</p>
+
 <h4>契約期間・解約</h4><p>6ヶ月単位の自動更新です。解約はマイページまたはメールでいつでも申請でき、申請した契約期間の満了をもって終了します。期間途中の返金は行いません。先着20名のファウンディングメンバー枠は最低契約期間の定めなく解約できます。</p>
+
 <h4>動作環境</h4><p>最新版の主要ブラウザ（Chrome / Safari / Edge）。</p>`};
+
 function openLegal(k){document.getElementById("modal-body").innerHTML=LEGAL[k];document.getElementById("modal-bg").classList.add("open");document.body.style.overflow="hidden";}
+
 function closeLegal(){document.getElementById("modal-bg").classList.remove("open");document.body.style.overflow="";}
+
 document.addEventListener("keydown",e=>{if(e.key==="Escape")closeLegal();});
 
 /* ---------- reveal ---------- */
+
 const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add("in");io.unobserve(e.target);}}),{threshold:.1});
+
 document.querySelectorAll(".rv").forEach(el=>io.observe(el));
+
 </script>
+
 </body>
+
 </html>
