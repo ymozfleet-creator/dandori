@@ -172,16 +172,6 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,17,23,.92);backdrop-
 .alertbox .btn{padding:13px 22px;font-size:13px}
 
 /* ===== categories ===== */
-.catlist{border-top:2px solid var(--ink)}
-.catbox{border-bottom:1px solid var(--line)}
-.cb-head{width:100%;background:none;border:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;padding:22px 6px;text-align:left}
-.cb-head h3{font-family:var(--serif);font-size:18px;font-weight:700}
-.cb-head .chev{font-family:var(--mono);color:var(--accent);font-size:18px;transition:transform .2s}
-.catbox.open .chev{transform:rotate(45deg)}
-.catbox ul{display:none;list-style:none;padding:0 6px 24px;grid-template-columns:repeat(3,1fr);gap:8px}
-.catbox.open ul{display:grid}
-.catbox li button{width:100%;text-align:left;background:var(--white);border:1px solid var(--line);padding:11px 14px;font-size:12.5px;cursor:pointer;transition:border-color .15s,color .15s;font-family:inherit}
-.catbox li button:hover{border-color:var(--accent);color:var(--accent-deep)}
 
 /* ===== pmo band ===== */
 .pmo-band{position:relative;overflow:hidden}
@@ -276,7 +266,6 @@ footer .logo{color:var(--paper)}
   .step{border-right:none;border-bottom:1px solid var(--line)}
   .step:last-child{border-bottom:none}
   .plans{grid-template-columns:1fr}
-  .catbox ul{grid-template-columns:1fr}
   .pmo-grid{grid-template-columns:1fr;gap:30px}
   .proj-row{grid-template-columns:1fr}
   .pj-side{text-align:left;display:flex;gap:14px;align-items:baseline}
@@ -363,6 +352,38 @@ footer .logo{color:var(--paper)}
 .ai-btn:hover{background:var(--accent)}
 .ai-btn:disabled{opacity:.5;cursor:wait}
 
+
+/* ===== PMO members ===== */
+.member-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.member{background:var(--paper);border:1px solid var(--line);padding:24px 22px;display:flex;flex-direction:column}
+.member .m-top{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+.member .m-avatar{width:60px;height:60px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-weight:800;font-size:24px;color:#fff}
+.member .m-name{font-family:var(--serif);font-weight:800;font-size:17px}
+.member .m-title{font-size:11.5px;color:var(--muted);margin-top:2px}
+.member .m-cat{display:inline-block;font-size:10.5px;font-weight:700;color:var(--accent-deep);background:var(--orange-soft);border-radius:4px;padding:2px 10px;margin-bottom:10px;align-self:flex-start}
+.member .m-bio{font-size:12.5px;color:var(--muted);line-height:1.8;flex:1;margin-bottom:14px}
+.member .m-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}
+.member .m-tags span{font-size:10.5px;border:1px solid var(--line);border-radius:99px;padding:3px 10px;color:var(--muted)}
+.member .m-line{width:100%;background:#06C755;color:#fff;border:none;padding:11px;font-weight:700;font-size:12.5px;cursor:pointer;border-radius:6px;font-family:inherit}
+.member .m-line:hover{opacity:.9}
+@media(max-width:880px){.member-grid{grid-template-columns:1fr}}
+
+
+/* ===== category tags ===== */
+.cat-tags{display:flex;flex-wrap:wrap;gap:10px}
+.cat-tags span{font-size:13px;font-weight:700;border:1px solid var(--ink);padding:9px 18px;cursor:pointer;transition:background .15s,color .15s;background:var(--white)}
+.cat-tags span:hover{background:var(--ink);color:#fff}
+
+
+/* ===== promise row ===== */
+.promise-row{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.promise{display:flex;gap:14px;align-items:flex-start;padding:22px;border:1px solid var(--line);background:var(--white)}
+.promise .pm-ic{width:44px;height:44px;border-radius:50%;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;flex:none}
+.promise .pm-ic .pic2{width:22px;height:22px;color:#fff}
+.promise b{display:block;font-size:14px;font-weight:900;margin-bottom:4px;font-family:var(--serif)}
+.promise span{font-size:12px;color:var(--muted);line-height:1.7}
+@media(max-width:880px){.promise-row{grid-template-columns:1fr}}
+
 </style>
 </head>
 <body>
@@ -384,6 +405,7 @@ footer .logo{color:var(--paper)}
   <div class="wrap nav">
     <a class="logo" href="#"><svg class="logo-mark" viewBox="0 0 44 50" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="2" y="8" width="24" height="7" rx="2" fill="currentColor"/><rect x="9" y="21" width="28" height="7" rx="2" fill="currentColor"/><rect x="16" y="34" width="20" height="7" rx="2" fill="#FF4D12"/></svg>ダンドリ<small>PMO代行マッチング</small></a>
     <nav class="nav-links">
+      <a href="#members">PMO一覧</a>
       <a href="#projects">相談案件</a>
       <a href="#category">頼める業務</a>
       <a href="#plans">料金</a>
@@ -416,6 +438,17 @@ footer .logo{color:var(--paper)}
     <div class="b"><b>1<small>週間</small></b><span>最短アサイン</span></div>
   </div>
 </div>
+
+<!-- ================= PROMISE（3つの約束・競合差別化） ================= -->
+<section style="padding:56px 0 0">
+  <div class="wrap">
+    <div class="promise-row rv">
+      <div class="promise"><div class="pm-ic"><svg class="pic2"><use href="#p-meeting"/></svg></div><div><b>顔が見えるPMOだけ</b><span>実名・顔写真・経歴を公開。「誰が来るか分からない」がありません。</span></div></div>
+      <div class="promise"><div class="pm-ic"><svg class="pic2"><use href="#p-doc"/></svg></div><div><b>相談はAIが整える</b><span>箇条書きで送るだけ。AIが要点を整理し、PMOに正確に伝わります。</span></div></div>
+      <div class="promise"><div class="pm-ic"><svg class="pic2"><use href="#p-handshake"/></svg></div><div><b>殺到させない</b><span>提案は最大数名まで。何十社も来て選びきれない、を防ぎます。</span></div></div>
+    </div>
+  </div>
+</section>
 
 <!-- ================= WHO PAYS（立場別 料金対比） ================= -->
 <section style="padding:64px 0 0">
@@ -488,7 +521,7 @@ footer .logo{color:var(--paper)}
     <p class="lead rv" style="margin-bottom:46px">面倒な業者探しは、もう終わり。条件を送れば、合うプロの方から提案が来ます。</p>
     <div class="steps rv">
       <div class="step"><div class="picrow"><div class="n">01</div><svg class="pic2"><use href="#p-doc"/></svg></div><h3>相談を送る</h3><p>課題と予算感を送るだけ。30秒。もちろん無料。LINEからでもOKです。</p></div>
-      <div class="step"><div class="picrow"><div class="n">02</div><svg class="pic2"><use href="#p-handshake"/></svg></div><h3>提案が届く</h3><p>条件にマッチした審査済みPMOだけに相談が届き、提案する意思のあるプロからのみ連絡が来ます。営業電話はありません。</p></div>
+      <div class="step"><div class="picrow"><div class="n">02</div><svg class="pic2"><use href="#p-handshake"/></svg></div><h3>提案が届く</h3><p>条件にマッチした審査済みPMOだけに届きます。比較サイトのように何十社も殺到させず、提案は最大数名まで。だから一人ひとりが本気で向き合えます。営業電話もありません。</p></div>
       <div class="step"><div class="picrow"><div class="n">03</div><svg class="pic2"><use href="#p-rocket-go"/></svg></div><h3>比べて、決める</h3><p>面談して比較。合えば業務委託契約へ、合わなければ1クリックでお断り。契約の義務はありません。</p></div>
     </div>
     <div class="assure rv"><span style="font-size:20px">◆</span><p><b>マッチング保証：</b>5営業日以内に提案が集まらなければ、事務局が条件に合うプロを個別にお探しします。それでも見つからなければ、もちろん0円のままです。</p></div>
@@ -558,13 +591,40 @@ footer .logo{color:var(--paper)}
   </div>
 </section>
 
-<!-- ================= CATEGORY ================= -->
+<!-- ================= PMO MEMBERS（こんなPMOがいます） ================= -->
+<section style="background:var(--white);border-top:1px solid var(--line)" id="members">
+  <div class="wrap">
+    <div class="kicker rv">PROFESSIONALS</div>
+    <h2 class="head rv">こんな“段取りのプロ”が、います。</h2>
+    <p class="lead rv" style="margin-bottom:8px">審査を通過したPMOの一例です。実名・顔写真・経歴を公開しているので、「誰に頼むか」を見て選べます。</p>
+    <p class="proj-note rv" id="member-note" style="margin-bottom:24px">※以下はサービス紹介用のサンプルです。</p>
+    <div class="member-grid rv" id="member-grid"></div>
+    <div class="more-wrap" id="member-more-wrap" style="display:none"><button class="btn btn-ghost" onclick="showAllMembers()">PMOをもっと見る</button></div>
+  </div>
+</section>
+
+<!-- ================= CATEGORY（対応分野タグ） ================= -->
 <section id="category">
   <div class="wrap">
     <div class="kicker rv">CATEGORY</div>
-    <h2 class="head rv">150の業務、ぜんぶ頼める。</h2>
-    <p class="lead rv" style="margin-bottom:42px">進捗管理から、火消し、補助金、IPO準備、新店オープンまで。業務名をクリックすると、そのまま相談フォームに入ります。</p>
-    <div class="catlist rv" id="catlist"></div>
+    <h2 class="head rv">対応分野は、14。</h2>
+    <p class="lead rv" style="margin-bottom:30px">進捗管理から、火消し、補助金、IPO準備、新店オープンまで。約150の業務に対応します。お探しの分野が見当たらなくても、まずはご相談ください。</p>
+    <div class="cat-tags rv">
+      <span onclick="presetCat('経営・新規事業')">経営・新規事業</span>
+      <span onclick="presetCat('IT・システム開発')">IT・システム開発</span>
+      <span onclick="presetCat('DX・業務改善')">DX・業務改善</span>
+      <span onclick="presetCat('製造・生産')">製造・生産</span>
+      <span onclick="presetCat('建設・店舗')">建設・店舗</span>
+      <span onclick="presetCat('マーケ・営業')">マーケ・営業</span>
+      <span onclick="presetCat('バックオフィス')">バックオフィス</span>
+      <span onclick="presetCat('人事・組織')">人事・組織</span>
+      <span onclick="presetCat('医療・介護・ヘルスケア')">医療・介護・ヘルスケア</span>
+      <span onclick="presetCat('物流・サプライチェーン')">物流・サプライチェーン</span>
+      <span onclick="presetCat('飲食・小売・サービス')">飲食・小売・サービス</span>
+      <span onclick="presetCat('補助金・公共')">補助金・公共</span>
+      <span onclick="presetCat('環境・エネルギー')">環境・エネルギー</span>
+      <span onclick="presetCat('スポット相談')">スポット相談</span>
+    </div>
   </div>
 </section>
 
@@ -584,7 +644,7 @@ footer .logo{color:var(--paper)}
       <div class="row"><span><svg class="pic2"><use href="#p-yen"/></svg>掲載料（月額サブスク・3ヶ月契約）</span><b>¥10,000<span style="font-size:11px;color:var(--muted-d)">／月 税込11,000円</span></b></div>
       <div class="row"><span><svg class="pic2"><use href="#p-handshake"/></svg>成果手数料</span><b>¥0</b></div>
       <div class="row"><span>報酬の取り分</span><b>100%</b></div>
-      <div class="row"><span>先着20名（ファウンディング枠）</span><b>3ヶ月無料</b></div>
+      <div class="row"><span><svg class="pic2"><use href="#p-handshake"/></svg>毎月20名（初月無料枠）</span><b>初月無料</b></div>
     </div>
   </div>
 </section>
@@ -859,27 +919,7 @@ loadProjects();
 
 /* ---------- categories ---------- */
 const CATMAP={"経営・新規事業":"経営・新規事業PMO","IT・システム開発":"IT・システム開発PMO","DX・業務改善":"DX・業務改善PMO","製造・生産":"製造・生産PMO","建設・店舗":"建設・店舗PMO","マーケ・営業":"マーケ・営業PMO","バックオフィス":"バックオフィスPMO","スポット相談":"スポット相談（ピンポイントPMO）","医療・介護・ヘルスケア":"医療・介護・ヘルスケアPMO","物流・サプライチェーン":"物流・サプライチェーンPMO","人事・組織":"人事・組織PMO","補助金・公共":"補助金・公共PMO","飲食・小売・サービス":"飲食・小売・サービスPMO","環境・エネルギー":"環境・エネルギーPMO"};
-const CATLIST=[
- {name:"経営・新規事業PMO",key:"経営・新規事業",links:["新規事業立ち上げの伴走","経営会議・幹部会議の事務局","事業計画の実行管理","中期経営計画の実行管理","補助金採択後のPJ管理","M&A・PMI統合管理","事業承継プロジェクト","フランチャイズ展開の管理","海外展開プロジェクト","資金調達PJの管理","アライアンス・合弁の管理","撤退・事業整理の管理"]},
- {name:"IT・システム開発PMO",key:"IT・システム開発",links:["進捗・スケジュール管理","課題・リスク管理","ベンダー管理","品質管理・テスト計画","要件定義の伴走支援","PMO事務局の立ち上げ","基幹システム刷新","クラウド移行（AWS/Azure）","セキュリティ対策PJ（ISMS）","データ移行の管理","保守運用体制の構築","アジャイル・スクラム導入","PM管理ツール導入","炎上PJの立て直し","開発内製化の支援"]},
- {name:"DX・業務改善PMO",key:"DX・業務改善",links:["DX推進室の立ち上げ","業務フロー可視化・BPR","SaaS導入PJ管理","ノーコード開発・内製化","RPA・AI-OCR導入の推進","データ基盤・BI構築","生成AI導入プロジェクト","電子契約・ペーパーレス推進","情シス機能の立ち上げ","BPO切替の管理","IT導入補助金PJ管理"]},
- {name:"製造・生産PMO",key:"製造・生産",links:["新工場・新ライン立ち上げ","生産管理システム導入","原価管理・原価低減PJ","TPS・カイゼン推進","5S・見える化の定着支援","品質保証体制の構築","品質不正の再発防止PJ","IoT・スマートファクトリー","設備投資PJ管理","OEM・外注先の管理","在庫削減プロジェクト","技能伝承・標準書整備","BCP策定"]},
- {name:"建設・店舗PMO",key:"建設・店舗",links:["発注者支援（CM方式）","工程管理・工程会議運営","予算統制・コスト管理","設計・施工者の選定支援","多店舗展開の出店管理","改修工事管理","BIM/CIM導入の管理","施工管理アプリ導入","安全管理体制の構築","再開発プロジェクト支援"]},
- {name:"マーケ・営業PMO",key:"マーケ・営業",links:["EC立ち上げプロジェクト","越境EC・海外販売立ち上げ","展示会出展PJ管理","サイトリニューアル管理","SFA/CRM導入の推進","SNS運用体制の構築","広告代理店の管理（発注者側）","代理店網構築の管理","会員制度・ポイント施策","新商品ローンチ管理","価格改定プロジェクト"]},
- {name:"バックオフィスPMO",key:"バックオフィス",links:["ERP・会計システム導入","経理DX（freee/MF導入）","インボイス・電帳法対応","人事制度改定PJ","IPO準備のPMO","内部統制・J-SOX対応","監査対応プロジェクト","規程・契約管理体制の整備","総務BPO切替の管理","オフィス移転PJ"]},
- {name:"人事・組織PMO",key:"人事・組織",links:["採用プロジェクトの管理","人事評価制度の構築PJ","教育研修体系の構築","タレントマネジメント導入","エンゲージメント改善PJ","組織再編・統合の管理","退職金・等級制度の改定PJ","HRテック導入（労務・勤怠）"]},
- {name:"医療・介護・ヘルスケアPMO",key:"医療・介護・ヘルスケア",links:["クリニック・施設の開設PJ","電子カルテ・予約システム導入","介護事業所の立ち上げ","医療機器開発の管理（QMS/ISO13485）","薬機法対応プロジェクト","訪問看護・在宅事業の立ち上げ","健診・ヘルスケア事業の立ち上げ"]},
- {name:"物流・サプライチェーンPMO",key:"物流・サプライチェーン",links:["倉庫移転・立ち上げPJ","WMS・在庫管理システム導入","3PL切替の管理","輸出入・通関体制の構築","共同配送・物流改善PJ","2024年問題対応（運行管理）","在庫最適化プロジェクト"]},
- {name:"飲食・小売・サービスPMO",key:"飲食・小売・サービス",links:["新店オープンの管理","FC加盟・立ち上げ支援","メニュー・商品開発PJ","POS・モバイルオーダー導入","HACCP・衛生管理体制","多店舗オペレーション標準化","セントラルキッチン立ち上げ"]},
- {name:"補助金・公共PMO",key:"補助金・公共",links:["ものづくり補助金のPJ管理","事業再構築・省力化補助金の管理","IT導入補助金のPJ管理","実績報告・交付申請の進行管理","自治体実証事業の管理","入札・プロポーザル対応","産学連携プロジェクトの管理"]},
- {name:"環境・エネルギーPMO",key:"環境・エネルギー",links:["省エネ設備導入PJ","太陽光・蓄電池導入の管理","GX・脱炭素計画の実行管理","ISO14001取得プロジェクト","産廃・リサイクル体制の構築"]},
- {name:"スポット相談（ピンポイントPMO）",key:"スポット相談",links:["壁打ち相談（1時間〜）","計画書・WBS作成代行","提案書・稟議書レビュー","定例会議ファシリ代行","議事録・課題表の整備","KPI・ダッシュボード設計","ベンダー見積もり査定","リスク洗い出しワークショップ","PJ健全性診断（PJ監査）","炎上PJ火消し診断","PM代打（産休・退職時）","月イチ顧問PMO","PM人材育成・社内研修"]}
-];
-document.getElementById("catlist").innerHTML=CATLIST.map((c,i)=>`
- <div class="catbox${i===0?" open":""}">
-   <button class="cb-head" onclick="this.parentElement.classList.toggle('open')"><h3>${c.name}</h3><span class="chev">＋</span></button>
-   <ul>${c.links.map(l=>`<li><button onclick="pickTask('${c.key}','${l}')">${l}</button></li>`).join("")}</ul>
- </div>`).join("");
+/* catlist描画は廃止（対応分野はタグ表示に変更） */
 function presetCat(name){const v=CATMAP[name]||"";if(v)document.getElementById("c-cat").value=v;openClientTab();}
 function pickTask(cat,task){
   presetCat(cat);
@@ -931,6 +971,57 @@ function openLegal(k){document.getElementById("modal-body").innerHTML=LEGAL[k];d
 function closeLegal(){document.getElementById("modal-bg").classList.remove("open");document.body.style.overflow="";}
 document.addEventListener("keydown",e=>{if(e.key==="Escape")closeLegal();});
 
+
+
+/* ---------- PMO members (こんなPMOがいます) ---------- */
+const SAMPLE_MEMBERS=[
+ {name:"佐藤 健一",initial:"佐",title:"元・大手SIer PM／独立",cat:"IT・システム開発",bio:"基幹システム刷新・マルチベンダー統制を15年。炎上案件の立て直しを得意とし、発注者側の視点で進捗と品質を統制します。",tags:["週2〜3日","リモート可","火消し対応"]},
+ {name:"田中 美咲",initial:"田",title:"元・メーカー経営企画",cat:"経営・新規事業",bio:"新規事業の立ち上げと経営会議の事務局運営が専門。中小企業の「決めて、やりきる」を伴走支援します。",tags:["週1日〜","経営会議","補助金PJ"]},
+ {name:"鈴木 隆",initial:"鈴",title:"元・自動車メーカー生産技術",cat:"製造・生産",bio:"トヨタ生産方式に基づく工場立ち上げ・原価低減を多数。現場に入り、カイゼンを定着させるまで伴走します。",tags:["常駐可","TPS","原価低減"]},
+ {name:"高橋 由紀",initial:"高",title:"現役コンサル（副業）",cat:"DX・業務改善",bio:"SaaS導入・業務フロー可視化が専門。平日夜と週末で、スポット相談から伴走まで柔軟に対応します。",tags:["スポット","平日夜OK","kintone"]},
+ {name:"伊藤 大輔",initial:"伊",title:"IPO準備・内部統制",cat:"バックオフィス",bio:"上場準備のPMOとして複数社を支援。経理DX・J-SOX対応・監査対応の進行管理を得意とします。",tags:["週2日","IPO準備","内部統制"]},
+ {name:"渡辺 彩",initial:"渡",title:"EC・D2C事業出身",cat:"マーケ・営業",bio:"EC立ち上げ・展示会出展・新商品ローンチの進行管理が専門。販促施策を計画倒れにさせません。",tags:["週1〜2日","EC立上げ","展示会"]}
+];
+const MEMBER_COLORS=["#0E5BD8","#E8762D","#1B9E55","#7C5CD6","#D6486B","#0F8FA3"];
+function renderMembers(list,isSample){
+  window._memList=list;window._memSample=isSample;
+  const note=document.getElementById("member-note");
+  if(note){note.textContent=isSample?"※以下はサービス紹介用のサンプルです。":"※掲載中のPMOプロフェッショナルです。";note.style.color=isSample?"var(--accent-deep)":"var(--ink)";}
+  const show=window._allMem?list:list.slice(0,6);
+  document.getElementById("member-grid").innerHTML=show.map((m,i)=>`
+   <div class="member">
+     <div class="m-top">
+       <div class="m-avatar" style="background:${MEMBER_COLORS[i%MEMBER_COLORS.length]}">${esc(m.initial||(m.name||"P").slice(0,1))}</div>
+       <div><div class="m-name">${esc(m.name)}</div><div class="m-title">${esc(m.title)}</div></div>
+     </div>
+     <span class="m-cat">${esc(m.cat)}PMO</span>
+     <p class="m-bio">${esc(m.bio)}</p>
+     <div class="m-tags">${(m.tags||[]).map(t=>`<span>${esc(t)}</span>`).join("")}</div>
+     <button class="m-line" onclick="openLine()">この分野で相談する（LINE）</button>
+   </div>`).join("");
+  const w=document.getElementById("member-more-wrap");
+  if(w)w.style.display=(list.length>6&&!window._allMem)?"block":"none";
+}
+function showAllMembers(){window._allMem=true;renderMembers(window._memList,window._memSample);}
+async function loadMembers(){
+  if(CONFIG.PROJECTS_URL){
+    // pmos.csv は projects.csv と同じ場所に置く想定（パスを置換）
+    const url=CONFIG.PROJECTS_URL.replace(/projects\.csv$/,"pmos.csv");
+    if(url!==CONFIG.PROJECTS_URL){
+      try{
+        const t=await(await fetch(url)).text();
+        const rows=parseCSV(t),h=rows[0],ix=n=>h.indexOf(n);
+        const list=rows.slice(1).filter(r=>r[ix("名前")]).map(r=>({
+          name:r[ix("名前")],initial:(r[ix("名前")]||"P").slice(0,1),title:r[ix("肩書")]||"",
+          cat:r[ix("カテゴリ")]||"",bio:r[ix("紹介")]||"",
+          tags:(r[ix("タグ")]||"").split(/[、,]/).filter(Boolean)}));
+        if(list.length){renderMembers(list,false);return;}
+      }catch(err){console.warn("members load failed",err);}
+    }
+  }
+  renderMembers(SAMPLE_MEMBERS,true);
+}
+loadMembers();
 
 /* ---------- AI相談文ジェネレーター ---------- */
 (function(){
